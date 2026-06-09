@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import '@ag-grid-community/core/dist/styles/ag-grid.css';
+import '@ag-grid-community/styles/ag-grid.css';
 import { Search, SlidersHorizontal, X, ExternalLink } from 'lucide-react';
 import { Badge, Button, Card, HashChip, Input, GovernancePanel } from '@/components/cc';
 import { getTransactions } from '@/lib/api';

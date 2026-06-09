@@ -1,5 +1,9 @@
 // validator/fingerprint.js
 // ---------------------------------------------------------------------------
+// CANONICAL SOURCE. indexer/fingerprint.js must be a byte-identical copy.
+// If you change this file, update indexer/fingerprint.js identically.
+// The CI diff check will fail the build if they diverge.
+// ---------------------------------------------------------------------------
 // The deterministic SHA-256 fingerprint contract.
 //
 // CRITICAL INVARIANT: the Phase 5 frontend "Verify Data Integrity" engine must

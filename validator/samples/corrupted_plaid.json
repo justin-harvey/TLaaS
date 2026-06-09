@@ -1,0 +1,23 @@
+[
+  {
+    "transaction_id": "plaid_tx_bad1",
+    "raw_merchant": "FRAUD TEST VENDOR",
+    "mcc_code": 5533,
+    "amount": -500.00,
+    "date": "2026-06-03"
+  },
+  {
+    "transaction_id": "plaid_tx_bad2",
+    "raw_merchant": "",
+    "mcc_code": 99,
+    "amount": 1200.00,
+    "date": "NOT_A_DATE"
+  },
+  {
+    "transaction_id": "plaid_tx_bad1",
+    "raw_merchant": "DUPLICATE ID VENDOR",
+    "mcc_code": 4900,
+    "amount": 800000000.00,
+    "date": "2026-06-04"
+  }
+]

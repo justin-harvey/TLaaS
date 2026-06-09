@@ -1,0 +1,150 @@
+/* src/styles/globals.css — Civic-Chain global styles */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ======================================================================
+   CC Design Tokens — the complete set from the handoff
+   ====================================================================== */
+:root {
+  /* Base ink & paper */
+  --cc-ink:           #14243F;
+  --cc-ink-soft:      #2C3C58;
+  --cc-paper:         #F4EDDF;
+  --cc-paper-deep:    #ECE2CE;
+  --cc-card:          #FBF7EE;
+  --cc-card-raised:   #FFFDF8;
+
+  /* Civic Blue scale */
+  --cc-blue-700:      #102A52;
+  --cc-blue-600:      #1B3D74;
+  --cc-blue-500:      #2D5BA8;
+  --cc-blue-300:      #7C9BC9;
+  --cc-blue-100:      #D7E1EF;
+
+  /* Muted / structure */
+  --cc-muted:         #756B5B;
+  --cc-muted-soft:    #9A8F7C;
+  --cc-line:          #DDD3BE;
+  --cc-line-strong:   #C6B99E;
+  --cc-line-ink:      #B7AB8E;
+
+  /* Editorial tones */
+  --cc-tone-cream:    #E7D9B8; --cc-tone-cream-fg:  #4A3F22;
+  --cc-tone-dusty:    #BC8A86; --cc-tone-dusty-fg:  #FBF7EE;
+  --cc-tone-gold:     #C79A3E; --cc-tone-gold-fg:   #3A2C08;
+  --cc-tone-sage:     #8FA585; --cc-tone-sage-fg:   #20301C;
+  --cc-tone-slate:    #57646F; --cc-tone-slate-fg:  #F4EDDF;
+
+  /* Semantic state */
+  --cc-anchored:      #5F7E5A;
+  --cc-anchored-bg:   #E2E8DA;
+  --cc-pending:       #B8862B;
+  --cc-pending-bg:    #F0E6CF;
+  --cc-spike:         #A8483A;
+  --cc-spike-bg:      #F0DCD5;
+  --cc-info:          #2D5BA8;
+  --cc-info-bg:       #DCE6F2;
+
+  /* Semantic aliases */
+  --bg:           var(--cc-paper);
+  --bg-sunken:    var(--cc-paper-deep);
+  --surface-card: var(--cc-card);
+  --text-strong:  var(--cc-ink);
+  --text-body:    var(--cc-ink-soft);
+  --text-muted:   var(--cc-muted);
+  --border:       var(--cc-line);
+  --border-strong: var(--cc-line-strong);
+  --accent:       var(--cc-blue-600);
+  --accent-hover: var(--cc-blue-700);
+  --focus-ring:   #2D5BA8;
+
+  /* Chart palette */
+  --chart-1: var(--cc-blue-600);
+  --chart-2: var(--cc-tone-gold);
+  --chart-3: var(--cc-tone-sage);
+  --chart-4: var(--cc-tone-dusty);
+  --chart-5: var(--cc-tone-slate);
+  --chart-6: var(--cc-tone-cream);
+  --chart-grid: #E3D9C4;
+
+  /* Typography */
+  --font-display: 'DM Serif Text', 'Iowan Old Style', Georgia, serif;
+  --font-sans:    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* Layout rails */
+  --sidebar-w:  248px;
+  --topbar-h:   56px;
+  --row-h:      38px;
+
+  /* Motion */
+  --ease-out:   cubic-bezier(0.2, 0.7, 0.2, 1);
+  --dur-fast:   120ms;
+  --dur-mid:    200ms;
+  --dur-slow:   320ms;
+}
+
+/* ======================================================================
+   Base resets
+   ====================================================================== */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-font-smoothing: antialiased; text-size-adjust: 100%; }
+body {
+  background: var(--cc-paper);
+  color: var(--cc-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ======================================================================
+   Scrollbars — warm, thin
+   ====================================================================== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--cc-paper-deep); }
+::-webkit-scrollbar-thumb { background: var(--cc-line-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cc-muted); }
+
+/* ======================================================================
+   Utility type classes from the design system guide
+   ====================================================================== */
+.type-display { font-family: var(--font-display); font-size: 44px; line-height: 1.08; letter-spacing: -0.01em; color: var(--cc-ink); }
+.type-h1      { font-family: var(--font-display); font-size: 30px; line-height: 1.1; color: var(--cc-ink); }
+.type-h2      { font-family: var(--font-display); font-size: 22px; line-height: 1.25; color: var(--cc-ink); }
+.type-h3      { font-family: var(--font-sans); font-size: 17px; font-weight: 600; color: var(--cc-ink); }
+.type-body    { font-family: var(--font-sans); font-size: 14px; line-height: 1.5; color: var(--cc-ink-soft); }
+.type-label   { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cc-muted); }
+.type-mono    { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+.type-stat    { font-family: var(--font-mono); font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+/* ======================================================================
+   AG Grid — warm paper overrides
+   ====================================================================== */
+.ag-theme-cc .ag-root-wrapper { background: var(--cc-card); border: 1px solid var(--cc-line); border-radius: 8px; }
+.ag-theme-cc .ag-header { background: var(--cc-paper-deep); border-bottom: 1.5px solid var(--cc-line-strong); }
+.ag-theme-cc .ag-header-cell-label { font-family: var(--font-sans); font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cc-muted); }
+.ag-theme-cc .ag-row { border-bottom: 1px solid var(--cc-line); height: var(--row-h); font-family: var(--font-sans); font-size: 13px; color: var(--cc-ink-soft); }
+.ag-theme-cc .ag-row:hover { background: var(--cc-blue-100) !important; }
+.ag-theme-cc .ag-row-selected { background: var(--cc-blue-100); }
+.ag-theme-cc .ag-row-odd { background: var(--cc-card); }
+.ag-theme-cc .ag-row-even { background: var(--cc-card-raised); }
+
+/* ======================================================================
+   Drawer slide-in animation
+   ====================================================================== */
+@keyframes ccSlide {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes ccFade {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.cc-slide-in { animation: ccSlide var(--dur-mid) var(--ease-out) both; }
+.cc-fade-in  { animation: ccFade var(--dur-mid) var(--ease-out) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cc-slide-in, .cc-fade-in { animation: none; }
+}

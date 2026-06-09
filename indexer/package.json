@@ -1,0 +1,16 @@
+{
+  "name": "tlaas-indexer",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "TLaaS Stellar anchor event indexer + cache verification",
+  "scripts": {
+    "start": "node indexer.js",
+    "test:integration": "node test-indexer.js"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^13.0.0",
+    "dotenv": "^16.4.5",
+    "pg": "^8.13.1"
+  }
+}

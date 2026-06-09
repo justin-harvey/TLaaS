@@ -1,0 +1,30 @@
+# docker-compose.db.yml
+# Phase-1 verification harness: boots ONLY Postgres with init.sql auto-mounted.
+# The full multi-service orchestration (validator/indexer/frontend) lands in Phase 7.
+#
+#   docker compose -f docker-compose.db.yml up --build -d
+#   bash db/verify.sh
+#   docker compose -f docker-compose.db.yml down -v   # tear down + wipe volume
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: tlaas_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secret_password}
+      POSTGRES_DB: ${DB_NAME:-tlaas_ledger}
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

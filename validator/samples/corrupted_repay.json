@@ -1,0 +1,5 @@
+[
+  { "creation_date": "6/03/2026, 12:17:35 PM", "payment_number": "WPBAD1", "invoice_numbers": "INV1", "vendor_number": "WP1", "vendor_name": "NEGATIVE VENDOR", "payment_type": "VCard", "total_amount": "-$500.00", "status": "Pending" },
+  { "creation_date": "NOT_A_DATE", "payment_number": "WPBAD2", "invoice_numbers": "INV2", "vendor_number": "WP2", "vendor_name": "", "payment_type": "Mystery", "total_amount": "$1,200.00", "status": "Pending" },
+  { "creation_date": "6/03/2026, 12:17:38 PM", "payment_number": "WPBAD1", "invoice_numbers": "INV3", "vendor_number": "WP3", "vendor_name": "DUPLICATE PAYMENT NUM", "payment_type": "Check", "total_amount": "$900,000,000.00", "status": "Pending" }
+]

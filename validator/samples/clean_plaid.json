@@ -1,0 +1,28 @@
+[
+  {
+    "transaction_id": "plaid_tx_0001",
+    "raw_merchant": "MIDWEST AUTO SUPPLY #442",
+    "merchant_entity_id": "ent_midwest",
+    "mcc_code": 5533,
+    "amount": 4250.00,
+    "date": "2026-06-03",
+    "payment_channel": "online",
+    "pending": false
+  },
+  {
+    "transaction_id": "plaid_tx_0002",
+    "raw_merchant": "GRID POWER UTILITIES",
+    "mcc_code": 4900,
+    "amount": 1820.55,
+    "date": "2026-06-04",
+    "pending": false
+  },
+  {
+    "transaction_id": "plaid_tx_0003",
+    "raw_merchant": "ACME HARDWARE & TOOLS",
+    "mcc_code": 5072,
+    "amount": 640.10,
+    "date": "2026-06-05",
+    "pending": true
+  }
+]

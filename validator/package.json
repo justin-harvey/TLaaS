@@ -1,0 +1,18 @@
+{
+  "name": "tlaas-validator",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "TLaaS ingestion validator + 3-tier circuit breaker (Plaid/MCC path)",
+  "scripts": {
+    "start": "node index.js",
+    "test:unit": "node test-unit.js",
+    "test:integration": "node test-pipeline.js"
+  },
+  "dependencies": {
+    "@stellar/stellar-sdk": "^13.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "pg": "^8.13.1"
+  }
+}

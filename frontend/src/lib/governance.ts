@@ -5,7 +5,7 @@
 // Falls back gracefully if Freighter is not installed.
 // ---------------------------------------------------------------------------
 
-const API = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+const API = '';
 
 // ---- Canonical serialisation (must match governance-pure.js exactly) ------
 export interface OverrideIntent {

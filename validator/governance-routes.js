@@ -6,6 +6,36 @@ import { applyOverride, closePeriod, isRegisteredAdmin } from './governance-serv
 
 const router = Router();
 
+// ---- GET /api/governance/month-summary -----------------------------------
+// Returns the current fingerprint and row count for a tenant+month.
+// The frontend fetches this BEFORE building the signed Close-of-Period intent.
+router.get('/month-summary', async (req, res) => {
+    const { tenantId, monthKey } = req.query;
+    if (!tenantId || !monthKey || !/^\d{4}-\d{2}$/.test(monthKey)) {
+        return res.status(400).json({ error: 'tenantId and monthKey (YYYY-MM) required' });
+    }
+    try {
+        const { rows } = await req.pool.query(
+            `SELECT creation_date, vendor_name, mcc_code, assigned_category, total_amount
+               FROM repay_payment_ledger
+              WHERE tenant_id = $1 AND to_char(creation_date,'YYYY-MM') = $2`,
+            [Number(tenantId), monthKey]
+        );
+        if (rows.length === 0) return res.status(404).json({ error: 'No rows found for this period.' });
+        const { computeFingerprint, buildSanitizedRow } = await import('./fingerprint.js');
+        const fingerprintHex = computeFingerprint(rows.map(r => buildSanitizedRow({
+            date:     new Date(r.creation_date).toISOString().split('T')[0],
+            merchant: r.vendor_name,
+            mcc:      r.mcc_code,
+            category: r.assigned_category,
+            amount:   Number(r.total_amount),
+        })));
+        res.json({ fingerprintHex, rowCount: rows.length, monthKey, tenantId: Number(tenantId) });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ---- GET /api/governance/admin-status ------------------------------------
 // Check whether a Stellar public key is the registered admin for a tenant.
 // Used by the frontend to unlock the governance panel after wallet connect.
@@ -50,15 +80,15 @@ router.post('/override', async (req, res) => {
 // Recompute fingerprint and anchor the month on-chain.
 // Body: { tenantId, monthKey, publicKey, signature }
 router.post('/close-period', async (req, res) => {
-    const { tenantId, monthKey, publicKey, signature } = req.body;
-    if (!tenantId || !monthKey || !publicKey || !signature) {
-        return res.status(400).json({ error: 'tenantId, monthKey, publicKey, and signature are required' });
+    const { tenantId, monthKey, publicKey, signature, fingerprintHex } = req.body;
+    if (!tenantId || !monthKey || !publicKey || !signature || !fingerprintHex) {
+        return res.status(400).json({ error: 'tenantId, monthKey, publicKey, signature, and fingerprintHex are required' });
     }
     if (!/^\d{4}-\d{2}$/.test(monthKey)) {
         return res.status(400).json({ error: 'monthKey must be YYYY-MM' });
     }
     try {
-        const result = await closePeriod(req.pool, Number(tenantId), monthKey, publicKey, signature);
+        const result = await closePeriod(req.pool, Number(tenantId), monthKey, publicKey, signature, fingerprintHex);
         res.json(result);
     } catch (err) {
         const status = err.message.startsWith('GOVERNANCE_REJECTED') ? 403 : 500;

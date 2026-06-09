@@ -1,0 +1,130 @@
+# docker-compose.yml — TLaaS full stack
+# Phase 7 deliverable. Brings up all four services in dependency order.
+#
+# Usage:
+#   cp .env.example .env.production && vi .env.production   # fill in secrets
+#   docker compose --env-file .env.production up --build -d
+#   docker compose logs -f validator indexer               # watch live activity
+#   docker compose down -v                                 # full teardown + wipe
+#
+# End-to-end smoke test:
+#   cp validator/samples/clean_repay.json  repay_dropzones/1__automotive__repay__june.json
+#   # Wait ~15s for the watcher poll, then:
+#   curl http://localhost:4000/health
+#   curl http://localhost:3000
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Postgres cache (the read-optimised heart of the dashboard) ──────────────
+  db:
+    image: postgres:16-alpine
+    container_name: tlaas_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB:       ${DB_NAME:-tlaas_ledger}
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - tlaas_net
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "${DB_USER:-postgres}", "-d", "${DB_NAME:-tlaas_ledger}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Validator (dropzone watcher + governance API) ──────────────────────────
+  validator:
+    build:
+      context: ./validator
+      dockerfile: Dockerfile
+    container_name: tlaas_validator
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:                  postgres://${DB_USER:-postgres}:${DB_PASSWORD}@db:5432/${DB_NAME:-tlaas_ledger}
+      STELLAR_RPC_URL:               ${STELLAR_RPC_URL}
+      STELLAR_NETWORK_PASSPHRASE:    ${STELLAR_NETWORK_PASSPHRASE}
+      SERVER_SECRET_KEY:             ${SERVER_SECRET_KEY}
+      SOROBAN_LEDGER_CONTRACT_ID:    ${SOROBAN_LEDGER_CONTRACT_ID}
+      API_PORT:                      ${API_PORT:-4000}
+      CORS_ORIGIN:                   ${CORS_ORIGIN:-http://localhost:3000}
+      DROP_DIR:                      /mnt/drops
+      QUARANTINE_DIR:                /mnt/quarantine
+      POLL_INTERVAL:                 ${POLL_INTERVAL:-15}
+    ports:
+      - "${API_PORT:-4000}:${API_PORT:-4000}"
+    volumes:
+      - repay_dropzones:/mnt/drops
+      - quarantine_dropzones:/mnt/quarantine
+    networks:
+      - tlaas_net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:${API_PORT:-4000}/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ── Indexer (Stellar anchor event → DB cache verifier) ─────────────────────
+  indexer:
+    build:
+      context: ./indexer
+      dockerfile: Dockerfile
+    container_name: tlaas_indexer
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL:                postgres://${DB_USER:-postgres}:${DB_PASSWORD}@db:5432/${DB_NAME:-tlaas_ledger}
+      STELLAR_RPC_URL:             ${STELLAR_RPC_URL}
+      STELLAR_NETWORK_PASSPHRASE:  ${STELLAR_NETWORK_PASSPHRASE}
+      SERVER_SECRET_KEY:           ${SERVER_SECRET_KEY}
+      SOROBAN_LEDGER_CONTRACT_ID:  ${SOROBAN_LEDGER_CONTRACT_ID}
+      INDEXER_LOOKBACK:            ${INDEXER_LOOKBACK:-100}
+      INDEXER_POLL_MS:             ${INDEXER_POLL_MS:-5000}
+    networks:
+      - tlaas_net
+
+  # ── Frontend (Next.js analytics dashboard) ─────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: tlaas_frontend
+    restart: unless-stopped
+    depends_on:
+      validator:
+        condition: service_healthy
+    environment:
+      NODE_ENV:               production
+      NEXT_PUBLIC_API_URL:    http://validator:${API_PORT:-4000}
+    ports:
+      - "3000:3000"
+    networks:
+      - tlaas_net
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--spider", "http://localhost:3000"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+# ── Named volumes ───────────────────────────────────────────────────────────
+volumes:
+  postgres_data:       # Postgres WAL + data — survives container restarts
+  repay_dropzones:     # SFTP-mounted intake; validator polls and clears
+  quarantine_dropzones: # Rejected files + .errors.json reports
+
+# ── Isolated bridge network ─────────────────────────────────────────────────
+networks:
+  tlaas_net:
+    driver: bridge

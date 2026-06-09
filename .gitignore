@@ -1,0 +1,25 @@
+# Secrets
+.env
+.env.production
+.env.local
+*.key
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Runtime data folders (validator file intake)
+repay_dropzones/
+quarantine_dropzones/
+
+# Rust / Soroban build artifacts
+target/
+*.wasm
+
+# Postgres local volume (if bind-mounted during dev)
+postgres_data/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/

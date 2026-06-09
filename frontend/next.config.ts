@@ -1,8 +1,8 @@
 import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
   reactStrictMode: true,
-  // Allow importing from @ag-grid-community
   transpilePackages: ['@ag-grid-community'],
 };
 

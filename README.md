@@ -1,4 +1,4 @@
-# TLaaS — Trustless Ledger as a Service
+# TLaaS — Transparency Ledger as a Service
 
 Hybrid off-chain Postgres cache + Stellar/Soroban anchoring layer. Provable,
 tamper-evident financial analytics with $0-per-seat pricing.

@@ -72,6 +72,12 @@ check('close-period intent includes action, hash, and month', () => {
     assert.strictEqual(o.month, '2026-07');
     assert.strictEqual(o.t_id, 42);
 });
+check('close-period intent contains real hash not placeholder', () => {
+    const hash = 'a'.repeat(64);
+    const s = JSON.parse(serialiseClosePeriodIntent(1, '2026-06', hash, 9999));
+    assert.strictEqual(s.hash, hash);
+    assert.ok(!s.hash.includes('pending'), '"pending" must not appear in signed intent');
+});
 
 console.log('\n=== Timestamp freshness ===');
 

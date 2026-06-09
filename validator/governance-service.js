@@ -31,31 +31,6 @@ import {
 export { serialiseOverrideIntent, serialiseClosePeriodIntent, isTimestampFresh };
 
 // ---------------------------------------------------------------------------
-// Canonical intent serialisation — both client and server must produce the
-// same byte sequence. Keys are kept short (from the blueprint spec).
-// ---------------------------------------------------------------------------
-export function serialiseOverrideIntent(intent) {
-    return JSON.stringify({
-        t_id:     intent.tenantId,
-        tx_id:    intent.transactionId,    // ledger_row_id (numeric DB id)
-        orig_cat: intent.originalCategory,
-        req_cat:  intent.requestedCategory,
-        reason:   intent.justification.trim(),
-        time:     intent.timestamp,
-    });
-}
-
-export function serialiseClosePeriodIntent(tenantId, monthKey, fingerprintHex, timestamp) {
-    return JSON.stringify({
-        action:   'close_period',
-        t_id:     tenantId,
-        month:    monthKey,
-        hash:     fingerprintHex,
-        time:     timestamp,
-    });
-}
-
-// ---------------------------------------------------------------------------
 // Gate 1: Ed25519 signature verification.
 // Stellar's Keypair.sign(data) hashes internally (sha256 then ed25519).
 // So Keypair.verify(data, sig) expects the same raw data bytes.
@@ -139,9 +114,8 @@ export async function applyOverride(pool, intent, publicKey, signatureB64) {
 // Recomputes the fingerprint from the current cache state (post-overrides),
 // verifies the signature, then anchors on-chain.
 // ---------------------------------------------------------------------------
-export async function closePeriod(pool, tenantId, monthKey, publicKey, signatureB64) {
-    // Recompute fingerprint from cache BEFORE signature check so we can include
-    // the hash in the signed intent (admin is signing a specific fingerprint).
+export async function closePeriod(pool, tenantId, monthKey, publicKey, signatureB64, submittedFingerprintHex) {
+    // Recompute fingerprint server-side (source of truth).
     const { rows } = await pool.query(
         `SELECT creation_date, vendor_name, mcc_code, assigned_category, total_amount
            FROM repay_payment_ledger
@@ -150,7 +124,7 @@ export async function closePeriod(pool, tenantId, monthKey, publicKey, signature
     );
     if (rows.length === 0) throw new Error(`No rows found for tenant ${tenantId} month ${monthKey}.`);
 
-    const fingerprintHex = computeFingerprint(rows.map(r => buildSanitizedRow({
+    const computedFingerprintHex = computeFingerprint(rows.map(r => buildSanitizedRow({
         date:     new Date(r.creation_date).toISOString().split('T')[0],
         merchant: r.vendor_name,
         mcc:      r.mcc_code,
@@ -158,7 +132,12 @@ export async function closePeriod(pool, tenantId, monthKey, publicKey, signature
         amount:   Number(r.total_amount),
     })));
 
-    const intentString = serialiseClosePeriodIntent(tenantId, monthKey, fingerprintHex, Date.now());
+    // Verify the submitted fingerprint matches what we computed.
+    if (submittedFingerprintHex !== computedFingerprintHex) {
+        throw new Error('GOVERNANCE_REJECTED: Submitted fingerprint does not match current ledger state. Re-fetch and re-sign.');
+    }
+
+    const intentString = serialiseClosePeriodIntent(tenantId, monthKey, computedFingerprintHex, Date.now());
 
     if (!verifySignature(intentString, signatureB64, publicKey)) {
         throw new Error('GOVERNANCE_REJECTED: Close-of-Period signature is invalid.');
@@ -169,8 +148,8 @@ export async function closePeriod(pool, tenantId, monthKey, publicKey, signature
 
     // Gate passed — anchor on-chain. This is the ONLY call site of anchorHashToStellar.
     const ipfsCid = `ipfs://tlaas-${tenantId}-${monthKey}`; // placeholder until IPFS upload is wired
-    const result  = await anchorHashToStellar(tenantId, monthKey, ipfsCid, fingerprintHex);
+    const result  = await anchorHashToStellar(tenantId, monthKey, ipfsCid, computedFingerprintHex);
 
-    console.log(`⚓ Period closed: tenant=${tenantId} month=${monthKey} hash=${fingerprintHex.slice(0, 12)}… tx=${result.hash.slice(0, 12)}…`);
-    return { success: true, fingerprintHex, stellarTxHash: result.hash, ledger: result.ledger };
+    console.log(`⚓ Period closed: tenant=${tenantId} month=${monthKey} hash=${computedFingerprintHex.slice(0, 12)}… tx=${result.hash.slice(0, 12)}…`);
+    return { success: true, fingerprintHex: computedFingerprintHex, stellarTxHash: result.hash, ledger: result.ledger };
 }

@@ -89,24 +89,32 @@ export async function submitOverride(intent: OverrideIntent): Promise<{ success:
     return r.json();
 }
 
+export async function fetchMonthSummary(tenantId: number, monthKey: string): Promise<{
+    fingerprintHex: string; rowCount: number;
+}> {
+    const r = await fetch(`${API}/api/governance/month-summary?tenantId=${tenantId}&monthKey=${monthKey}`);
+    if (!r.ok) throw new Error('Could not fetch period summary. Ensure data has been ingested for this month.');
+    return r.json();
+}
+
 export async function submitClosePeriod(tenantId: number, monthKey: string): Promise<{
     success: boolean; stellarTxHash: string; fingerprintHex: string; ledger: number;
 }> {
-    // Timestamp is included in the signed payload so the admin commits to a specific moment.
-    const timestamp   = Date.now();
-    // The fingerprint is computed server-side; we sign a "request to close" intent.
-    // The server will compute the actual fingerprint, include it, and verify nothing drifted.
-    const intentStr   = serialiseClosePeriodIntent(tenantId, monthKey, 'pending', timestamp);
+    // Step 1: fetch the real fingerprint so we sign a specific ledger state.
+    const { fingerprintHex } = await fetchMonthSummary(tenantId, monthKey);
+
+    // Step 2: sign an intent that commits to this exact fingerprint.
+    const timestamp = Date.now();
+    const intentStr = serialiseClosePeriodIntent(tenantId, monthKey, fingerprintHex, timestamp);
     const { signature, publicKey } = await signMessage(intentStr);
+
+    // Step 3: submit with the fingerprint so the server can verify both match.
     const r = await fetch(`${API}/api/governance/close-period`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenantId, monthKey, publicKey, signature }),
+        body: JSON.stringify({ tenantId, monthKey, publicKey, signature, fingerprintHex }),
     });
-    if (!r.ok) {
-        const err = await r.json();
-        throw new Error(err.error || 'Close-of-Period failed');
-    }
+    if (!r.ok) { const err = await r.json(); throw new Error(err.error || 'Close-of-Period failed'); }
     return r.json();
 }
 

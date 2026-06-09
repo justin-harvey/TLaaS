@@ -43,10 +43,10 @@ export interface HashChipProps {
   label?: React.ReactNode;
   chars?: number;
   href?: string;
-  tone?: 'info' | 'anchored' | 'neutral';
+  tone?: 'info' | 'anchored' | 'neutral' | 'spike';
   style?: React.CSSProperties;
 }
-const chipBg  = { info: 'bg-[#DCE6F2] text-[#1B3D74]', anchored: 'bg-[#E2E8DA] text-[#3A5436]', neutral: 'bg-[#ECE2CE] text-[#756B5B]' };
+const chipBg  = { info: 'bg-[#DCE6F2] text-[#1B3D74]', anchored: 'bg-[#E2E8DA] text-[#3A5436]', neutral: 'bg-[#ECE2CE] text-[#756B5B]', spike: 'bg-[#F0DCD5] text-[#A8483A]' };
 
 export function HashChip({ value, label, chars = 6, href, tone = 'info', style }: HashChipProps) {
   const [copied, setCopied] = useState(false);

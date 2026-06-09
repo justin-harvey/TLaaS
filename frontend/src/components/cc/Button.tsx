@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 export interface ButtonProps {
@@ -13,6 +14,7 @@ export interface ButtonProps {
   style?: React.CSSProperties;
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   type?: 'button' | 'submit' | 'reset';
+  href?: string;
 }
 
 const base = 'inline-flex items-center gap-1.5 font-sans font-medium rounded-xs transition-all duration-[120ms] cursor-pointer select-none active:translate-y-px disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40';
@@ -24,13 +26,21 @@ const variants = {
   danger:    'bg-spike text-white hover:bg-[#8a3a2e]',
 };
 
-export function Button({ children, variant = 'primary', size = 'md', disabled, icon, iconRight, full, style, onClick, type = 'button' }: ButtonProps) {
-  return (
-    <button type={type} disabled={disabled} style={style} onClick={onClick}
-      className={cn(base, sizes[size], variants[variant], full && 'w-full justify-center')}>
+export function Button({ children, variant = 'primary', size = 'md', disabled, icon, iconRight, full, style, onClick, type = 'button', href }: ButtonProps) {
+  const className = cn(base, sizes[size], variants[variant], full && 'w-full justify-center');
+  const inner = (
+    <>
       {icon && !iconRight && <span className="w-[1em] h-[1em] flex items-center">{icon}</span>}
       {children}
       {icon && iconRight && <span className="w-[1em] h-[1em] flex items-center">{icon}</span>}
+    </>
+  );
+  if (href) {
+    return <Link href={href} style={style} className={className}>{inner}</Link>;
+  }
+  return (
+    <button type={type} disabled={disabled} style={style} onClick={onClick} className={className}>
+      {inner}
     </button>
   );
 }

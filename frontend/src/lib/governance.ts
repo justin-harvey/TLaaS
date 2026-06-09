@@ -47,22 +47,22 @@ export async function freighterAvailable(): Promise<boolean> {
 }
 
 export async function connectWallet(): Promise<string> {
-    const { requestAccess, getPublicKey } = await import('@stellar/freighter-api');
-    const accessResult = await requestAccess();
-    if (accessResult.error) throw new Error(accessResult.error);
-    const pkResult = await getPublicKey();
-    if (pkResult.error) throw new Error(pkResult.error);
-    return pkResult.publicKey;
+    const { requestAccess } = await import('@stellar/freighter-api');
+    const result = await requestAccess();
+    if (result.error) throw new Error(result.error);
+    return result.address;
 }
 
 async function signMessage(message: string): Promise<{ signature: string; publicKey: string }> {
-    const { signMessage: fSign, getPublicKey } = await import('@stellar/freighter-api');
-    const pkResult = await getPublicKey();
-    if (pkResult.error) throw new Error(pkResult.error);
-    const signResult = await fSign(message, pkResult.publicKey);
+    const { signMessage: fSign, getAddress } = await import('@stellar/freighter-api');
+    const addrResult = await getAddress();
+    if (addrResult.error) throw new Error(addrResult.error);
+    const signResult = await fSign(message, { address: addrResult.address });
     if (signResult.error) throw new Error(signResult.error);
-    // signedMessage is a base64-encoded raw ed25519 signature
-    return { signature: signResult.signedMessage, publicKey: pkResult.publicKey };
+    const raw = signResult.signedMessage;
+    if (!raw) throw new Error('Freighter returned no signature');
+    const signature = typeof raw === 'string' ? raw : Buffer.from(raw).toString('base64');
+    return { signature, publicKey: signResult.signerAddress };
 }
 
 // ---- API calls -----------------------------------------------------------

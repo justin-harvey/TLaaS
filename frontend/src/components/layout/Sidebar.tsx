@@ -1,5 +1,6 @@
 'use client';
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -12,40 +13,45 @@ interface NavItem {
   id:    string;
   label: string;
   href:  string;
-  icon:  React.ComponentType<{ size?: number; className?: string }>;
+  icon:  React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>;
   soon?: boolean;
 }
 
 const nav: NavItem[] = [
-  { id: 'overview',  label: 'Executive Overview',    href: '/overview',  icon: LayoutDashboard },
-  { id: 'ledger',    label: 'Ledger Explorer',        href: '/ledger',    icon: Table2 },
-  { id: 'query',     label: 'Query Terminal',         href: '/query',     icon: Terminal },
-  { id: 'verify',    label: 'Blockchain Verification',href: '/verify',    icon: Shield },
-  { id: 'anomalies', label: 'Anomaly Center',         href: '/anomalies', icon: AlertTriangle },
+  { id: 'overview',  label: 'Overview',               href: '/overview',  icon: LayoutDashboard },
+  { id: 'ledger',    label: 'Public Ledger',           href: '/ledger',    icon: Table2 },
+  { id: 'query',     label: 'Query Terminal',          href: '/query',     icon: Terminal },
+  { id: 'verify',    label: 'Blockchain Verification', href: '/verify',    icon: Shield },
+  { id: 'anomalies', label: 'Anomaly Center',          href: '/anomalies', icon: AlertTriangle },
 ];
 const navSoon: NavItem[] = [
-  { id: 'budget',   label: 'Budget Analytics',    href: '#', icon: BarChart3, soon: true },
-  { id: 'dept',     label: 'Department Analysis', href: '#', icon: Users,     soon: true },
-  { id: 'vendor',   label: 'Vendor Intelligence', href: '#', icon: Store,     soon: true },
-  { id: 'audit',    label: 'Audit Trail',         href: '#', icon: ScrollText,soon: true },
-  { id: 'admin',    label: 'Administration',      href: '#', icon: Settings,  soon: true },
+  { id: 'contracts', label: 'Contracts',          href: '#', icon: ScrollText, soon: true },
+  { id: 'budget',    label: 'Budget Analytics',   href: '#', icon: BarChart3,  soon: true },
+  { id: 'vendors',   label: 'Vendor Intelligence',href: '#', icon: Store,      soon: true },
+  { id: 'dept',      label: 'Department Analysis',href: '#', icon: Users,      soon: true },
+  { id: 'admin',     label: 'Administration',     href: '#', icon: Settings,   soon: true },
 ];
 
 export function Sidebar() {
   const path = usePathname();
   return (
     <aside className="fixed left-0 top-0 bottom-0 flex flex-col z-20"
-      style={{ width: 'var(--sidebar-w)', background: 'var(--cc-paper-deep)', borderRight: '1px solid var(--cc-line-strong)' }}>
+      style={{ width: 'var(--sidebar-w)', background: 'var(--cc-card)', borderRight: '1px solid var(--cc-line)' }}>
 
-      {/* Logo / wordmark */}
-      <div className="flex items-center gap-2 px-4 h-[56px] border-b border-[#C6B99E] flex-shrink-0">
-        <div className="w-6 h-6 rounded-xs bg-blue-600 flex items-center justify-center flex-shrink-0">
-          <div className="w-2.5 h-2.5 border-2 border-white/80 rounded-[2px]" />
-        </div>
+      {/* Logo */}
+      <div className="flex items-center gap-2.5 px-4 h-[56px] border-b flex-shrink-0" style={{ borderColor: 'var(--cc-line)' }}>
+        <Image src="/brand/civic-chain-logo.svg" alt="Civic-Chain" width={26} height={26} className="flex-shrink-0" />
         <div>
-          <p className="font-display text-[15px] text-ink leading-none">CivicChain</p>
-          <p className="text-[9px] font-sans font-semibold tracking-[0.1em] uppercase text-muted mt-0.5">Trustless Ledger</p>
+          <p className="font-display text-[15px] leading-none" style={{ color: 'var(--cc-ink)' }}>Civic-Chain</p>
+          <p className="text-[9px] font-semibold tracking-[0.1em] uppercase mt-0.5" style={{ color: 'var(--cc-muted)' }}>Admin Console</p>
         </div>
+      </div>
+
+      {/* Context badge */}
+      <div className="mx-3 mt-3 px-3 py-2 rounded-md text-[11px]"
+        style={{ background: 'var(--cc-tone-dusty)', color: 'var(--cc-tone-dusty-fg)' }}>
+        <p className="font-semibold">Town of Any Town, Maine</p>
+        <p className="opacity-70 mt-0.5">Municipal Treasury Account</p>
       </div>
 
       {/* Primary nav */}
@@ -58,24 +64,31 @@ export function Sidebar() {
               className={cn(
                 'flex items-center gap-2.5 px-2 py-2 rounded-xs text-sm transition-all duration-[120ms] group',
                 active
-                  ? 'bg-[#D7E1EF] text-[#1B3D74] font-semibold'
-                  : 'text-ink-soft hover:bg-[#DDD3BE]/60 hover:text-ink'
-              )}>
-              <item.icon size={15} className={cn('flex-shrink-0', active ? 'text-blue-600' : 'text-muted group-hover:text-ink-soft')} />
+                  ? 'font-semibold'
+                  : 'hover:text-ink'
+              )}
+              style={active
+                ? { background: 'var(--cc-blue-100)', color: 'var(--cc-ink)' }
+                : { color: 'var(--cc-ink-soft)' }
+              }>
+              <item.icon size={15} className="flex-shrink-0"
+                style={{ color: active ? 'var(--cc-blue-600)' : undefined }} />
               {item.label}
             </Link>
           );
         })}
 
-        <p className="type-label px-2 mt-4 mb-2">Insights</p>
+        <p className="type-label px-2 mt-4 mb-2">Coming Soon</p>
         {navSoon.map(item => (
           <div key={item.id}
-            className="flex items-center justify-between px-2 py-2 rounded-xs text-sm text-muted cursor-default select-none opacity-60">
+            className="flex items-center justify-between px-2 py-2 rounded-xs text-sm cursor-default select-none opacity-50"
+            style={{ color: 'var(--cc-muted)' }}>
             <div className="flex items-center gap-2.5">
-              <item.icon size={15} className="flex-shrink-0 text-muted" />
+              <item.icon size={15} className="flex-shrink-0" />
               {item.label}
             </div>
-            <span className="text-[9px] font-semibold uppercase tracking-wider bg-[#DDD3BE] text-muted px-1.5 py-0.5 rounded-xs">
+            <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-xs"
+              style={{ background: 'var(--cc-tone-dusty)', color: 'var(--cc-tone-dusty-fg)' }}>
               SOON
             </span>
           </div>
@@ -83,9 +96,9 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="px-4 py-3 border-t border-[#C6B99E] flex-shrink-0">
-        <p className="text-[11px] text-muted">Town of Millbrook, NH</p>
-        <p className="text-[10px] text-muted/60 font-mono mt-0.5">FY2026 · Anchored</p>
+      <div className="px-4 py-3 border-t flex-shrink-0" style={{ borderColor: 'var(--cc-line)' }}>
+        <p className="text-[11px]" style={{ color: 'var(--cc-muted)' }}>MTA-2026-HPW-001</p>
+        <p className="text-[10px] font-mono mt-0.5" style={{ color: 'var(--cc-muted)', opacity: 0.6 }}>Ledger Rail · FY2026</p>
       </div>
     </aside>
   );

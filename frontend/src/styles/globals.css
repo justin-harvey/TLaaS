@@ -1,5 +1,5 @@
 /* src/styles/globals.css — Civic-Chain global styles */
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Text:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=IBM+Plex+Mono:wght@400;500&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -8,34 +8,34 @@
    CC Design Tokens — the complete set from the handoff
    ====================================================================== */
 :root {
-  /* Base ink & paper */
-  --cc-ink:           #14243F;
-  --cc-ink-soft:      #2C3C58;
-  --cc-paper:         #F4EDDF;
-  --cc-paper-deep:    #ECE2CE;
-  --cc-card:          #FBF7EE;
-  --cc-card-raised:   #FFFDF8;
+  /* Base ink & paper — Civic-Chain brand */
+  --cc-ink:           #131F86;
+  --cc-ink-soft:      #23336F;
+  --cc-paper:         #F3F1E8;
+  --cc-paper-deep:    #EAE7DB;
+  --cc-card:          #FAF3E8;
+  --cc-card-raised:   #FCFAF4;
 
   /* Civic Blue scale */
-  --cc-blue-700:      #102A52;
-  --cc-blue-600:      #1B3D74;
-  --cc-blue-500:      #2D5BA8;
-  --cc-blue-300:      #7C9BC9;
-  --cc-blue-100:      #D7E1EF;
+  --cc-blue-700:      #0D1660;
+  --cc-blue-600:      #131F86;
+  --cc-blue-500:      #2330A8;
+  --cc-blue-300:      #7C8EC9;
+  --cc-blue-100:      #DBE3EE;
 
   /* Muted / structure */
-  --cc-muted:         #756B5B;
-  --cc-muted-soft:    #9A8F7C;
-  --cc-line:          #DDD3BE;
-  --cc-line-strong:   #C6B99E;
-  --cc-line-ink:      #B7AB8E;
+  --cc-muted:         #5C6382;
+  --cc-muted-soft:    #8A90AA;
+  --cc-line:          rgba(19, 31, 134, 0.14);
+  --cc-line-strong:   rgba(19, 31, 134, 0.24);
+  --cc-line-ink:      rgba(19, 31, 134, 0.30);
 
-  /* Editorial tones */
-  --cc-tone-cream:    #E7D9B8; --cc-tone-cream-fg:  #4A3F22;
-  --cc-tone-dusty:    #BC8A86; --cc-tone-dusty-fg:  #FBF7EE;
-  --cc-tone-gold:     #C79A3E; --cc-tone-gold-fg:   #3A2C08;
-  --cc-tone-sage:     #8FA585; --cc-tone-sage-fg:   #20301C;
-  --cc-tone-slate:    #57646F; --cc-tone-slate-fg:  #F4EDDF;
+  /* Editorial tones — exact Civic-Chain tokens */
+  --cc-tone-cream:    #FAF3E8; --cc-tone-cream-fg:  #131F86;
+  --cc-tone-dusty:    #DBE3EE; --cc-tone-dusty-fg:  #1C2F74;
+  --cc-tone-gold:     #DFC28C; --cc-tone-gold-fg:   #352613;
+  --cc-tone-sage:     #D5DFD5; --cc-tone-sage-fg:   #223440;
+  --cc-tone-slate:    #626C89; --cc-tone-slate-fg:  #F7F4ED;
 
   /* Semantic state */
   --cc-anchored:      #5F7E5A;
@@ -71,7 +71,7 @@
 
   /* Typography */
   --font-display: 'DM Serif Text', 'Iowan Old Style', Georgia, serif;
-  --font-sans:    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans:    'DM Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 
   /* Layout rails */

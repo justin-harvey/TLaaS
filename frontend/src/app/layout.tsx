@@ -3,8 +3,9 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import '@/styles/globals.css';
 
 export const metadata: Metadata = {
-  title: 'CivicChain · Trustless Ledger Analytics',
-  description: 'Every dollar on the record. Blockchain-anchored municipal procurement analytics.',
+  title: 'Civic-Chain · Municipal Ledger Analytics',
+  description: 'A procurement platform where money moves fast, and everyone can watch. Blockchain-anchored municipal transparency.',
+  icons: { icon: '/brand/civic-chain-logo.svg' },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

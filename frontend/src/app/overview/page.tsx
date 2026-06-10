@@ -27,25 +27,25 @@ export default function OverviewPage() {
   const trendOption = {
     backgroundColor: 'transparent',
     grid: { top: 16, bottom: 32, left: 40, right: 16 },
-    xAxis: { type: 'category', data: trend.months, axisLine: { lineStyle: { color: '#DDD3BE' } }, axisLabel: { color: '#756B5B', fontSize: 11 }, axisTick: { show: false } },
-    yAxis: { type: 'value', axisLabel: { color: '#756B5B', fontSize: 11, formatter: (v: number) => `$${v}M` }, splitLine: { lineStyle: { color: '#E3D9C4' } }, axisLine: { show: false } },
+    xAxis: { type: 'category', data: trend.months, axisLine: { lineStyle: { color: '#DDD3BE' } }, axisLabel: { color: '#5C6382', fontSize: 11 }, axisTick: { show: false } },
+    yAxis: { type: 'value', axisLabel: { color: '#5C6382', fontSize: 11, formatter: (v: number) => `$${v}M` }, splitLine: { lineStyle: { color: '#E3D9C4' } }, axisLine: { show: false } },
     series: [{
       type: 'line', smooth: 0.3, data: trend.values, symbol: 'circle', symbolSize: 6,
-      itemStyle: { color: '#1B3D74' }, lineStyle: { color: '#1B3D74', width: 2 },
-      areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(27,61,116,0.15)' }, { offset: 1, color: 'rgba(27,61,116,0)' }] } },
+      itemStyle: { color: '#131F86' }, lineStyle: { color: '#131F86', width: 2 },
+      areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(19,31,134,0.15)' }, { offset: 1, color: 'rgba(19,31,134,0)' }] } },
     }],
-    tooltip: { backgroundColor: '#FBF7EE', borderColor: '#DDD3BE', textStyle: { color: '#14243F', fontFamily: 'IBM Plex Sans' }, formatter: (p: { name: string; value: number }) => `${p.name}: $${p.value}M` },
+    tooltip: { backgroundColor: '#FAF3E8', borderColor: '#DDD3BE', textStyle: { color: '#131F86', fontFamily: 'DM Sans' }, formatter: (p: { name: string; value: number }) => `${p.name}: $${p.value}M` },
   };
 
   // ---- ECharts: category donut -------------------------------------------
   const catSpend: Record<string, number> = {};
   recentAnchors.forEach(t => { catSpend[t.category] = (catSpend[t.category] || 0) + t.amount; });
   const donutData = Object.entries(catSpend).map(([name, value]) => ({ name, value }));
-  const chartColors = ['#1B3D74', '#C79A3E', '#8FA585', '#BC8A86', '#57646F', '#E7D9B8'];
+  const chartColors = ['#131F86', '#DFC28C', '#D5DFD5', '#DBE3EE', '#626C89', '#FAF3E8'];
   const donutOption = {
     backgroundColor: 'transparent',
-    tooltip: { backgroundColor: '#FBF7EE', borderColor: '#DDD3BE', textStyle: { color: '#14243F' } },
-    legend: { orient: 'vertical', right: 8, top: 'center', textStyle: { color: '#756B5B', fontSize: 11, fontFamily: 'IBM Plex Sans' }, itemWidth: 10, itemHeight: 10 },
+    tooltip: { backgroundColor: '#FAF3E8', borderColor: '#DDD3BE', textStyle: { color: '#131F86' } },
+    legend: { orient: 'vertical', right: 8, top: 'center', textStyle: { color: '#5C6382', fontSize: 11, fontFamily: 'DM Sans' }, itemWidth: 10, itemHeight: 10 },
     series: [{
       type: 'pie', radius: ['50%', '80%'], center: ['35%', '50%'],
       data: donutData, color: chartColors,
@@ -54,8 +54,8 @@ export default function OverviewPage() {
     }],
   };
 
-  const remainPct = ((kpis.remaining / kpis.budget) * 100).toFixed(0);
-  const spendPct  = ((kpis.spend / kpis.budget) * 100).toFixed(0);
+  const allocPct = ((kpis.allocated / kpis.mtaBalance) * 100).toFixed(0);
+  const freePct  = ((kpis.unallocated / kpis.mtaBalance) * 100).toFixed(0);
 
   return (
     <div className="max-w-[1280px] mx-auto space-y-6">
@@ -74,10 +74,10 @@ export default function OverviewPage() {
 
       {/* KPI strip */}
       <div className="grid grid-cols-4 gap-4">
-        <StatTile label="Total Budget" value={fmtCompact(kpis.budget)} sub="FY2026 allocation" accent="var(--chart-1)" />
-        <StatTile label="Total Spend" value={fmtCompact(kpis.spend)} sub={`${spendPct}% of budget`} delta={spendPct + '%'} deltaTone="neutral" accent="var(--chart-2)" />
-        <StatTile label="Remaining" value={fmtCompact(kpis.remaining)} sub={`${remainPct}% available`} accent="var(--chart-3)" />
-        <StatTile label="Anchored Records" value={kpis.anchoredCount.toLocaleString()} sub="on-chain confirmations" accent="var(--chart-4)" />
+        <StatTile label="MTA Balance" value={fmtCompact(kpis.mtaBalance)} sub="Municipal treasury account" accent="var(--chart-1)" />
+        <StatTile label="Allocated" value={fmtCompact(kpis.allocated)} sub={`${allocPct}% of balance`} delta={allocPct + '%'} deltaTone="neutral" accent="var(--chart-2)" />
+        <StatTile label="Unallocated" value={fmtCompact(kpis.unallocated)} sub={`${freePct}% available`} accent="var(--chart-3)" />
+        <StatTile label="Card Pool Total" value={fmtCompact(kpis.cardPoolTotal)} sub="Active card programs" accent="var(--chart-4)" />
       </div>
 
       {/* Charts row */}
@@ -126,7 +126,7 @@ export default function OverviewPage() {
           actions={<Button size="sm" variant="ghost">Ledger</Button>}>
           <div className="space-y-0 -mx-4">
             {recentAnchors.map(t => (
-              <div key={t.id} className="flex items-center justify-between px-4 h-[38px] border-b border-[#DDD3BE] hover:bg-[#D7E1EF]/40 transition-colors group cursor-default">
+              <div key={t.id} className="flex items-center justify-between px-4 h-[38px] border-b hover:bg-[#DBE3EE]/40 transition-colors group cursor-default" style={{ borderColor: 'var(--cc-line)' }}>
                 <div className="flex items-center gap-2 min-w-0">
                   <Anchor size={11} className="text-[#5F7E5A] flex-shrink-0" />
                   <span className="text-[13px] text-ink truncate">{t.vendor}</span>

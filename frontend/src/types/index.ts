@@ -45,10 +45,10 @@ export interface Heatmap {
 // API response shapes
 export interface OverviewResponse {
   kpis: {
-    budget:         number;
-    spend:          number;
-    remaining:      number;
-    anchoredCount:  number;
+    mtaBalance:     number;
+    allocated:      number;
+    unallocated:    number;
+    cardPoolTotal:  number;
   };
   trend: {
     months: string[];

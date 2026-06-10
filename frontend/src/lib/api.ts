@@ -25,7 +25,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 // ---- /api/overview -------------------------------------------------------
 export async function getOverview(): Promise<OverviewResponse> {
   if (useMock) return {
-    kpis: { budget: fx.totalBudget, spend: fx.totalSpent, remaining: fx.totalBudget - fx.totalSpent, anchoredCount: fx.anchoredCount },
+    kpis: { mtaBalance: fx.mtaBalance, allocated: fx.mtaAllocated, unallocated: fx.mtaUnallocated, cardPoolTotal: fx.cardPoolTotal },
     trend: { months: fx.trendMonths, values: fx.spendTrend },
     departments: fx.departments,
     recentAnchors: fx.transactions.filter(t => t.anchor === 'anchored').slice(0, 5),

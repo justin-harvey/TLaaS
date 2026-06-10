@@ -1,18 +1,16 @@
-// src/lib/fixtures.ts — Mock data: Town of Millbrook, NH
-// Shaped exactly to the handoff types. Drop into MSW or Storybook as fixtures.
+// src/lib/fixtures.ts — Mock data: Town of Any Town, Maine
 import type { Department, Transaction, Anomaly, Heatmap } from '@/types';
 
+// 4 active contracts mapped as budget departments
 export const departments: Department[] = [
-  { name: 'Public Works', budget: 1_500_000, spent: 1_820_000, color: 'var(--chart-3)' },
-  { name: 'Police',       budget: 1_200_000, spent: 1_080_000, color: 'var(--chart-1)' },
-  { name: 'Fire & EMS',   budget:   980_000, spent:   742_000, color: 'var(--chart-2)' },
-  { name: 'Parks & Rec',  budget:   900_000, spent:   421_000, color: 'var(--chart-4)' },
-  { name: 'Schools',      budget: 4_200_000, spent: 2_310_000, color: 'var(--chart-5)' },
-  { name: 'Admin',        budget:   620_000, spent:   388_000, color: 'var(--chart-6)' },
+  { name: 'Snow & Ice Removal',     budget:  48_000, spent:  36_153, color: 'var(--chart-1)' },
+  { name: 'Public Works & Parks',   budget:  31_000, spent:  29_150, color: 'var(--chart-2)' },
+  { name: 'Pavement Crack Sealing', budget:  17_200, spent:  17_200, color: 'var(--chart-3)' },
+  { name: 'Dock Bulkhead Repairs',  budget: 134_700, spent:  87_806, color: 'var(--chart-4)' },
 ];
 
-export const spendTrend = [0.82, 0.97, 1.11, 1.24, 1.38, 1.66];
-export const trendMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'];
+export const spendTrend = [0.42, 0.68, 0.91, 1.10, 1.31, 1.47];
+export const trendMonths = ['Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar'];
 
 function hash(seed: number): string {
   const hex = '0123456789abcdef';
@@ -23,25 +21,25 @@ function hash(seed: number): string {
 }
 
 const seed: [string, string, string, string, number, 'anchored'|'pending', null|string, number][] = [
-  ['2026-06-01', 'Staples',           'Supplies',  'Admin',        312.40,    'anchored', null,          5943],
-  ['2026-06-01', 'FuelCo Energy',     'Fuel',      'Public Works', 855.10,    'anchored', null,          5541],
-  ['2026-06-02', 'Nashua Paving',     'Services',  'Public Works', 48_200.00, 'anchored', 'SPIKE',       1611],
-  ['2026-06-02', 'Granite Fleet',     'Equipment', 'Fire & EMS',   12_480.00, 'anchored', null,          5511],
-  ['2026-06-03', 'BoundTree Medical', 'Supplies',  'Fire & EMS',   2_240.75,  'anchored', null,          8099],
-  ['2026-06-03', 'Aramark',           'Services',  'Schools',      9_620.00,  'pending',  null,          5811],
-  ['2026-06-04', 'CDW-G',             'Equipment', 'Police',       6_310.20,  'anchored', null,          5045],
-  ['2026-06-04', 'Northeast Salt',    'Supplies',  'Public Works', 18_900.00, 'anchored', 'DUPLICATE',   5261],
-  ['2026-06-05', 'W.B. Mason',        'Supplies',  'Admin',          188.55,  'anchored', null,          5111],
-  ['2026-06-05', 'Verizon',           'Utilities', 'Admin',        1_402.00,  'anchored', null,          4814],
-  ['2026-06-06', 'Cintas',            'Services',  'Public Works',   740.00,  'pending',  null,          7349],
-  ['2026-06-06', 'FuelCo Energy',     'Fuel',      'Police',       1_120.30,  'anchored', null,          5541],
-  ['2026-06-07', 'Tyler Tech',        'Services',  'Admin',       25_000.00,  'anchored', 'OUTLIER',     7372],
-  ['2026-06-07', 'Staples',           'Supplies',  'Schools',        540.10,  'anchored', null,          5943],
-  ['2026-06-08', 'Granite Fleet',     'Fuel',      'Public Works',   980.00,  'anchored', null,          5541],
+  ['2026-03-13', 'NAPA Auto Parts',            'Equipment', 'Snow & Ice Removal',       127.50, 'anchored', null,             5533],
+  ['2026-03-13', 'Irving Oil, Bath ME',         'Fuel',      'Snow & Ice Removal',        87.20, 'anchored', null,             5541],
+  ['2026-03-13', 'Route 1 Diner',               'Services',  'Snow & Ice Removal',        43.90, 'anchored', 'SUSPICIOUS_MCC', 5812],
+  ['2026-03-12', 'Any Town Equipment Rental',   'Equipment', 'Snow & Ice Removal',     3_200.00, 'anchored', null,             7359],
+  ['2026-03-12', 'Casco Marine Supply',         'Equipment', 'Dock Bulkhead Repairs',  1_430.00, 'anchored', null,             5065],
+  ['2026-03-12', 'Mitchell Field Nursery',      'Supplies',  'Public Works & Parks',     850.00, 'pending',  null,             5261],
+  ['2026-03-10', 'Casco Marine Supply',         'Equipment', 'Dock Bulkhead Repairs',  2_118.00, 'anchored', null,             5065],
+  ['2026-03-07', 'Morrison Landscaping & Plowing LLC', 'Services', 'Snow & Ice Removal', 4_600.00, 'anchored', null,          780],
+  ['2026-03-04', 'Coastal Road Services LLC',   'Services',  'Pavement Crack Sealing', 5_167.30, 'anchored', 'SPIKE',          1711],
+  ['2026-03-04', 'Maine Pavement Supply Co.',   'Supplies',  'Pavement Crack Sealing', 3_440.00, 'anchored', null,             5251],
+  ['2026-03-03', 'Irving Oil, Bath ME',         'Fuel',      'Snow & Ice Removal',       847.20, 'anchored', 'DUPLICATE',      5541],
+  ['2026-03-03', 'Any Town Equipment Rental',   'Equipment', 'Snow & Ice Removal',     3_200.00, 'anchored', 'DUPLICATE',      7359],
+  ['2026-03-01', 'Coastal Road Services LLC',   'Services',  'Pavement Crack Sealing',13_760.00, 'anchored', null,             1711],
+  ['2026-01-15', 'GreenWorks Maine LLC',        'Services',  'Public Works & Parks',  18_000.00, 'anchored', null,              780],
+  ['2026-01-09', 'Casco Marine Works',          'Services',  'Dock Bulkhead Repairs', 22_071.00, 'anchored', 'OUTLIER',        1520],
 ];
 
 export const transactions: Transaction[] = seed.map(([date, vendor, category, department, amount, anchor, anomaly, mcc], i) => ({
-  id:          `TX-${480_112 + i}`,
+  id:          `TX-${480_100 + i}`,
   date, vendor, category, department, amount,
   anchor:      anchor as 'anchored' | 'pending',
   anomaly:     anomaly as null | 'SPIKE' | 'DUPLICATE' | 'OUTLIER' | 'SUSPICIOUS_MCC',
@@ -54,24 +52,30 @@ export const transactions: Transaction[] = seed.map(([date, vendor, category, de
 }));
 
 export const anomalies: Anomaly[] = [
-  { kind: 'Spend Spike',     vendor: 'Nashua Paving',  dept: 'Public Works', detail: '11.4× the 90-day median for Services', tone: 'spike',   tx: 'TX-480114' },
-  { kind: 'Duplicate Vendor',vendor: 'Northeast Salt', dept: 'Public Works', detail: 'Identical amount + memo within 48h',    tone: 'spike',   tx: 'TX-480119' },
-  { kind: 'Outlier Payment', vendor: 'Tyler Tech',     dept: 'Admin',        detail: 'Above tier ceiling for single PO',     tone: 'pending', tx: 'TX-480124' },
-  { kind: 'Suspicious MCC',  vendor: 'Granite Fleet',  dept: 'Public Works', detail: 'MCC 5541 on an equipment contract',    tone: 'pending', tx: 'TX-480126' },
+  { kind: 'Spend Spike',      vendor: 'Coastal Road Services LLC', dept: 'Pavement Crack Sealing', detail: '8.2× the 90-day median for Services',    tone: 'spike',   tx: 'TX-480108' },
+  { kind: 'Duplicate Vendor', vendor: 'Irving Oil, Bath ME',       dept: 'Snow & Ice Removal',     detail: 'Identical amount + memo within 48h',     tone: 'spike',   tx: 'TX-480110' },
+  { kind: 'Duplicate Vendor', vendor: 'Any Town Equipment Rental', dept: 'Snow & Ice Removal',     detail: 'Same PO amount on consecutive days',     tone: 'spike',   tx: 'TX-480111' },
+  { kind: 'Outlier Payment',  vendor: 'Casco Marine Works',        dept: 'Dock Bulkhead Repairs',  detail: 'Above single-PO ceiling for contract',   tone: 'pending', tx: 'TX-480114' },
+  { kind: 'Suspicious MCC',   vendor: 'Route 1 Diner',             dept: 'Snow & Ice Removal',     detail: 'MCC 5812 (restaurant) on fleet contract', tone: 'pending', tx: 'TX-480102' },
 ];
 
 export const heatmap: Heatmap = {
-  rows:   ['Public Works', 'Police', 'Fire & EMS', 'Schools', 'Admin'],
-  cols:   ['W22', 'W23', 'W24', 'W25', 'W26'],
+  rows:   ['Snow & Ice Removal', 'Public Works & Parks', 'Pavement Sealing', 'Dock Repairs'],
+  cols:   ['W8', 'W9', 'W10', 'W11', 'W12'],
   values: [
-    [1, 2, 3, 2, 3],
-    [0, 1, 0, 1, 0],
-    [1, 0, 1, 0, 1],
+    [1, 2, 3, 2, 2],
     [0, 1, 1, 2, 1],
-    [0, 0, 2, 1, 0],
+    [2, 3, 1, 0, 0],
+    [0, 1, 2, 1, 1],
   ],
 };
 
-export const totalBudget = departments.reduce((a, d) => a + d.budget, 0);
-export const totalSpent  = departments.reduce((a, d) => a + d.spent,  0);
-export const anchoredCount = 1_244_882;
+export const totalBudget    = departments.reduce((a, d) => a + d.budget, 0);
+export const totalSpent     = departments.reduce((a, d) => a + d.spent,  0);
+export const anchoredCount  = 1_244_882;
+
+// MTA account headline figures
+export const mtaBalance     = 487_250;
+export const mtaAllocated   = 230_900;
+export const mtaUnallocated = 256_350;
+export const cardPoolTotal  =  59_031;

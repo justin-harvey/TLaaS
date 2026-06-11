@@ -5,8 +5,8 @@ import type { Department, Transaction, Anomaly, Heatmap } from '@/types';
 export const departments: Department[] = [
   { name: 'Snow & Ice Removal',     budget:  48_000, spent:  36_153, color: 'var(--chart-1)' },
   { name: 'Public Works & Parks',   budget:  31_000, spent:  29_150, color: 'var(--chart-2)' },
-  { name: 'Pavement Crack Sealing', budget:  17_200, spent:  17_200, color: 'var(--chart-3)' },
-  { name: 'Dock Bulkhead Repairs',  budget: 134_700, spent:  87_806, color: 'var(--chart-4)' },
+  { name: 'Pavement Crack Sealing', budget:  17_200, spent:  17_200, color: 'var(--chart-5)' },
+  { name: 'Dock Bulkhead Repairs',  budget: 134_700, spent:  87_806, color: 'var(--cc-anchored)' },
 ];
 
 export const spendTrend = [0.42, 0.68, 0.91, 1.10, 1.31, 1.47];

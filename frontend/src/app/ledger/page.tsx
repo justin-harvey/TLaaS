@@ -1,5 +1,6 @@
 'use client';
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { AgGridReact } from '@ag-grid-community/react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import '@ag-grid-community/styles/ag-grid.css';
@@ -19,7 +20,12 @@ function AnomalyCell({ value }: { value: string | null }) {
   return <Badge tone={tone}>{value}</Badge>;
 }
 
-export default function LedgerPage() {
+function LedgerInner() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const deptFilter = params.get('dept');
+  const flaggedOnly = params.get('flagged') === '1';
+
   const [rows, setRows]           = useState<Transaction[]>([]);
   const [selected, setSelected]   = useState<Transaction | null>(null);
   const [search, setSearch]       = useState('');
@@ -28,22 +34,29 @@ export default function LedgerPage() {
   useEffect(() => { getTransactions().then(r => setRows(r.rows)); }, []);
 
   const filtered = useMemo(() =>
-    rows.filter(r => !search || r.vendor.toLowerCase().includes(search.toLowerCase()) || r.category.toLowerCase().includes(search.toLowerCase())),
-    [rows, search]
+    rows.filter(r =>
+      (!search || r.vendor.toLowerCase().includes(search.toLowerCase()) || r.category.toLowerCase().includes(search.toLowerCase())) &&
+      (!deptFilter || r.department === deptFilter) &&
+      (!flaggedOnly || r.anomaly != null)
+    ),
+    [rows, search, deptFilter, flaggedOnly]
   );
 
   const colDefs = useMemo(() => [
     { field: 'date',       headerName: 'DATE',       width: 110, cellRenderer: ({ value }: { value: string }) => fmtDate(value) },
     { field: 'id',         headerName: 'TX ID',      width: 110, cellStyle: { fontFamily: 'IBM Plex Mono', fontSize: '12px' } },
-    { field: 'vendor',     headerName: 'VENDOR',     flex: 1 },
+    { field: 'vendor',     headerName: 'VENDOR',     flex: 1, minWidth: 160 },
     { field: 'category',   headerName: 'CATEGORY',   width: 130 },
     { field: 'department', headerName: 'DEPT',       width: 130 },
     { field: 'amount',     headerName: 'AMOUNT',     width: 110, type: 'rightAligned', cellStyle: { fontFamily: 'IBM Plex Mono', fontSize: '12px' }, cellRenderer: ({ value }: { value: number }) => fmtUSD(value) },
     { field: 'anchor',     headerName: 'ANCHOR',     width: 120, cellRenderer: AnchorCell },
-    { field: 'anomaly',    headerName: 'ANOMALY',    width: 120, cellRenderer: AnomalyCell },
+    { field: 'anomaly',    headerName: 'ANOMALY',    width: 168, cellRenderer: AnomalyCell },
   ], []);
 
   const onRowClicked = useCallback(({ data }: { data: Transaction }) => setSelected(data), []);
+  const clearFilter  = useCallback(() => router.replace('/ledger', { scroll: false }), [router]);
+
+  const hasUrlFilter = !!deptFilter || flaggedOnly;
 
   return (
     <div className="max-w-[1280px] mx-auto space-y-4" style={{ height: 'calc(100vh - 96px)' }}>
@@ -59,6 +72,19 @@ export default function LedgerPage() {
       {/* Search bar */}
       <Input icon={<Search size={14} />} placeholder="Search vendor, category, TX id…"
         value={search} onChange={e => setSearch(e.target.value)} size="md" />
+
+      {/* Active filter chip (from Anomaly Center) */}
+      {hasUrlFilter && (
+        <div className="flex items-center gap-2">
+          <span className="type-label">Filtered:</span>
+          {flaggedOnly && <Badge tone="spike" dot>Flagged only</Badge>}
+          {deptFilter && <Badge tone="info" dot={false}>{deptFilter}</Badge>}
+          <button onClick={clearFilter}
+            className="inline-flex items-center gap-1 text-[12px] text-muted hover:text-ink transition-colors">
+            <X size={13} /> Clear
+          </button>
+        </div>
+      )}
 
       {/* Grid + drawer */}
       <div className="flex gap-4 flex-1 overflow-hidden" style={{ height: 'calc(100% - 130px)' }}>
@@ -162,5 +188,13 @@ export default function LedgerPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function LedgerPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-64"><p className="type-label animate-pulse">Loading ledger…</p></div>}>
+      <LedgerInner />
+    </Suspense>
   );
 }

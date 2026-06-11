@@ -44,7 +44,12 @@ export default function OverviewPage() {
   const chartColors = ['#131F86', '#DFC28C', '#D5DFD5', '#DBE3EE', '#626C89', '#FAF3E8'];
   const donutOption = {
     backgroundColor: 'transparent',
-    tooltip: { backgroundColor: '#FAF3E8', borderColor: '#DDD3BE', textStyle: { color: '#131F86' } },
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: '#FAF3E8', borderColor: '#DDD3BE', textStyle: { color: '#131F86' },
+      formatter: (p: { name: string; value: number; percent: number }) =>
+        `${p.name}<br/><b>${fmtUSD(p.value)}</b> · ${p.percent}%`,
+    },
     legend: { orient: 'vertical', right: 8, top: 'center', textStyle: { color: '#5C6382', fontSize: 11, fontFamily: 'DM Sans' }, itemWidth: 10, itemHeight: 10 },
     series: [{
       type: 'pie', radius: ['50%', '80%'], center: ['35%', '50%'],

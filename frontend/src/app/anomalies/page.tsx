@@ -1,10 +1,18 @@
 'use client';
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import ReactECharts from 'echarts-for-react';
 import { AlertTriangle, Zap, Copy, TrendingUp, HelpCircle } from 'lucide-react';
 import { Card, Badge, Button, HashChip } from '@/components/cc';
 import { getAnomalies } from '@/lib/api';
 import type { AnomaliesResponse } from '@/types';
+
+// Heatmap row labels are abbreviated; map them back to the canonical
+// department names used on transactions so the Ledger filter matches.
+const DEPT_ALIAS: Record<string, string> = {
+  'Pavement Sealing': 'Pavement Crack Sealing',
+  'Dock Repairs':     'Dock Bulkhead Repairs',
+};
 
 const kindIcon: Record<string, React.ComponentType<{size?:number;className?:string}>> = {
   'Spend Spike':      Zap,
@@ -16,6 +24,7 @@ const kindCount = ['Spend Spikes', 'Duplicates', 'Outliers', 'Suspicious MCC'];
 
 export default function AnomaliesPage() {
   const [data, setData] = useState<AnomaliesResponse | null>(null);
+  const router = useRouter();
 
   useEffect(() => { getAnomalies().then(setData); }, []);
   if (!data) return <div className="flex items-center justify-center h-64"><p className="type-label animate-pulse">Loading anomalies…</p></div>;
@@ -37,6 +46,17 @@ export default function AnomaliesPage() {
     visualMap: { min: 0, max: 3, show: false, inRange: { color: ['#E2E8DA', '#F0E6CF', '#F0DCD5', '#A8483A'] } },
     series: [{ type: 'heatmap', data: heatData, label: { show: true, formatter: ({ value }: { value: [number,number,number] }) => value[2] === 0 ? '' : value[2].toString(), color: '#14243F', fontSize: 11 }, emphasis: { itemStyle: { shadowBlur: 10 } }, itemStyle: { borderColor: '#FBF7EE', borderWidth: 2, borderRadius: 3 } }],
     tooltip: { backgroundColor: '#FBF7EE', borderColor: '#DDD3BE', textStyle: { color: '#14243F', fontSize: 12 }, formatter: ({ value }: { value: [number,number,number] }) => `${heatmap.rows[value[1]]} · ${heatmap.cols[value[0]]}: severity ${value[2]}` },
+  };
+
+  // Click a heatmap cell → Ledger filtered to that department's flagged rows.
+  // (Weeks are synthetic severity buckets with no per-transaction date link,
+  //  so we scope by department + flagged, not by week.)
+  const onHeatClick = (params: { data?: [number, number, number] }) => {
+    if (!params?.data) return;
+    const [, ri] = params.data;
+    const deptLabel = heatmap.rows[ri];
+    const dept = DEPT_ALIAS[deptLabel] ?? deptLabel;
+    router.push(`/ledger?dept=${encodeURIComponent(dept)}&flagged=1`);
   };
 
   const counts = [spikes, dupes, outliers, mcc];
@@ -69,8 +89,9 @@ export default function AnomaliesPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card eyebrow="Department × week risk" title="Spend Risk Heatmap" className="col-span-2" padded={false}>
           <div className="px-2">
-            <ReactECharts option={heatOption} style={{ height: 260 }} />
+            <ReactECharts option={heatOption} style={{ height: 260, cursor: 'pointer' }} onEvents={{ click: onHeatClick }} />
           </div>
+          <p className="px-4 text-[11px] text-muted">Click a cell to view that department&apos;s flagged transactions →</p>
           <div className="px-4 pb-3 flex gap-3 items-center">
             {[['Low (1)', '#F0E6CF'], ['Medium (2)', '#F0DCD5'], ['High (3)', '#A8483A']].map(([label, color]) => (
               <div key={label} className="flex items-center gap-1.5">

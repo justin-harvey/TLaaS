@@ -3,8 +3,11 @@ import type {
   OverviewResponse, TransactionListResponse, Transaction,
   VerifyResponse, QueryNLResponse, QuerySQLResponse,
   AnomaliesResponse, TxFilter,
+  BudgetAnalyticsResponse, VendorsResponse, VendorFilter,
+  DepartmentAnalysisResponse, ContractDetail, AdminConsole,
 } from '@/types';
 import * as fx from './fixtures';
+import { buildDetail } from './contracts';
 
 // Toggle: set NEXT_PUBLIC_API_URL in .env to point at the real backend.
 // Without it, all calls return mock fixture data.
@@ -84,4 +87,76 @@ export async function querySQL(sql: string): Promise<QuerySQLResponse> {
 export async function getAnomalies(): Promise<AnomaliesResponse> {
   if (useMock) return { items: fx.anomalies, heatmap: fx.heatmap };
   return get<AnomaliesResponse>('/api/anomalies');
+}
+
+// ---- /api/budget ---------------------------------------------------------
+export async function getBudgetAnalytics(year?: string): Promise<BudgetAnalyticsResponse> {
+  if (useMock) {
+    const y = year && fx.fiscalYears.includes(year) ? year : fx.fiscalYears[0];
+    const b = fx.budgetForYear(y);
+    const approved   = b.lines.reduce((a, l) => a + l.budget, 0);
+    const actual     = b.lines.reduce((a, l) => a + l.spent, 0);
+    const encumbered = b.lines.reduce((a, l) => a + l.encumbered, 0);
+    return {
+      year: y, years: fx.fiscalYears,
+      kpis: {
+        approved, actual, encumbered,
+        remaining:   approved - actual - encumbered,
+        utilizedPct: Math.round((actual / approved) * 100),
+      },
+      period:      b.period,
+      trend:       b.trend,
+      lines:       b.lines,
+      byCategory:  b.byCategory,
+      prior:       b.prior,
+      commitments: b.commitments,
+      funds:       b.funds,
+      amendments:  b.amendments,
+    };
+  }
+  const q = year ? `?year=${encodeURIComponent(year)}` : '';
+  return get<BudgetAnalyticsResponse>(`/api/budget${q}`);
+}
+
+// ---- /api/vendors --------------------------------------------------------
+export async function getVendors(filter: VendorFilter = {}): Promise<VendorsResponse> {
+  if (useMock) {
+    let vendors = fx.vendorSummaries;
+    if (filter.q)    vendors = vendors.filter(v => v.vendor.toLowerCase().includes(filter.q!.toLowerCase()));
+    if (filter.dept) vendors = vendors.filter(v =>
+      fx.transactions.some(t => t.vendor === v.vendor && t.department === filter.dept));
+    return { vendors, mechanismMix: fx.mechanismMix, topVendors: fx.topVendors };
+  }
+  const params = new URLSearchParams(Object.entries(filter).filter(([, v]) => v != null).map(([k, v]) => [k, String(v)]));
+  return get<VendorsResponse>(`/api/vendors?${params}`);
+}
+
+// ---- /api/contracts ------------------------------------------------------
+export async function getContracts(): Promise<ContractDetail[]> {
+  if (useMock) {
+    return fx.contracts
+      .map(c => buildDetail(c, fx.transactions))
+      .sort((a, b) => b.severity - a.severity || a.daysLeft - b.daysLeft);
+  }
+  return get<ContractDetail[]>('/api/contracts');
+}
+
+export async function getContract(id: string): Promise<ContractDetail | null> {
+  if (useMock) {
+    const c = fx.contracts.find(c => c.id === id);
+    return c ? buildDetail(c, fx.transactions) : null;
+  }
+  return get<ContractDetail | null>(`/api/contracts/${encodeURIComponent(id)}`);
+}
+
+// ---- /api/admin ----------------------------------------------------------
+export async function getAdmin(): Promise<AdminConsole> {
+  if (useMock) return fx.adminConsole;
+  return get<AdminConsole>('/api/admin');
+}
+
+// ---- /api/departments ----------------------------------------------------
+export async function getDepartmentAnalysis(): Promise<DepartmentAnalysisResponse> {
+  if (useMock) return { departments: fx.departmentDetails, heatmap: fx.heatmap, byDept: fx.deptSpend };
+  return get<DepartmentAnalysisResponse>('/api/departments');
 }

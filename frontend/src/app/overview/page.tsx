@@ -2,26 +2,45 @@
 import React, { useEffect, useState } from 'react';
 import ReactECharts from 'echarts-for-react';
 import { Download, RefreshCw, Anchor } from 'lucide-react';
-import { Card, StatTile, BudgetBar, Badge, Button, HashChip } from '@/components/cc';
-import { getOverview } from '@/lib/api';
-import { fmtCompact, fmtUSD, fmtDate } from '@/lib/utils';
-import type { OverviewResponse } from '@/types';
+import { Card, StatTile, Badge, Button, HashChip } from '@/components/cc';
+import { getOverview, getBudgetAnalytics } from '@/lib/api';
+import { computeBudgetHealth, overallRating, RATING_COLOR, RATING_TONE } from '@/lib/budget-health';
+import { fmtCompact, fmtUSD } from '@/lib/utils';
+import type { OverviewResponse, BudgetAnalyticsResponse } from '@/types';
 
 export default function OverviewPage() {
   const [data, setData] = useState<OverviewResponse | null>(null);
+  const [budget, setBudget] = useState<BudgetAnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     getOverview().then(d => { setData(d); setLoading(false); });
+    getBudgetAnalytics().then(setBudget);
   }, []);
 
-  if (loading || !data) return (
+  if (loading || !data || !budget) return (
     <div className="flex items-center justify-center h-64">
       <div className="type-label animate-pulse">Loading ledger data…</div>
     </div>
   );
 
-  const { kpis, trend, departments, recentAnchors, recentAnomalies } = data;
+  const { kpis, trend, recentAnchors, recentAnomalies } = data;
+
+  // Budget position (the power user's first question) from the Budget surface.
+  const approved   = budget.lines.reduce((a, l) => a + l.budget, 0);
+  const actual     = budget.lines.reduce((a, l) => a + l.spent, 0);
+  const encumbered = budget.lines.reduce((a, l) => a + l.encumbered, 0);
+  const remaining  = approved - actual - encumbered;
+  const utilized   = approved ? Math.round((actual / approved) * 100) : 0;
+  const priorActual = budget.lines.reduce((a, l) => a + (budget.prior[l.name] ?? 0), 0);
+  const yoyPct      = priorActual ? Math.round(((actual - priorActual) / priorActual) * 100) : 0;
+
+  // Budget health rolled up from the Budget Analytics surface (shared scoring).
+  const deptAnomalies: Record<string, number> = {};
+  recentAnomalies.forEach(a => { deptAnomalies[a.dept] = (deptAnomalies[a.dept] ?? 0) + 1; });
+  const healthItems  = computeBudgetHealth(budget.lines, budget.period.fyElapsedPct, deptAnomalies);
+  const health       = overallRating(healthItems);
+  const flaggedDepts = healthItems.filter(i => i.rating !== 'Healthy');
 
   // ---- ECharts: area-line spend trend ------------------------------------
   const trendOption = {
@@ -37,30 +56,13 @@ export default function OverviewPage() {
     tooltip: { backgroundColor: '#FAF3E8', borderColor: '#DDD3BE', textStyle: { color: '#131F86', fontFamily: 'DM Sans' }, formatter: (p: { name: string; value: number }) => `${p.name}: $${p.value}M` },
   };
 
-  // ---- ECharts: category donut -------------------------------------------
-  const catSpend: Record<string, number> = {};
-  recentAnchors.forEach(t => { catSpend[t.category] = (catSpend[t.category] || 0) + t.amount; });
-  const donutData = Object.entries(catSpend).map(([name, value]) => ({ name, value }));
-  const chartColors = ['#131F86', '#DFC28C', '#D5DFD5', '#DBE3EE', '#626C89', '#FAF3E8'];
-  const donutOption = {
-    backgroundColor: 'transparent',
-    tooltip: {
-      trigger: 'item',
-      backgroundColor: '#FAF3E8', borderColor: '#DDD3BE', textStyle: { color: '#131F86' },
-      formatter: (p: { name: string; value: number; percent: number }) =>
-        `${p.name}<br/><b>${fmtUSD(p.value)}</b> · ${p.percent}%`,
-    },
-    legend: { orient: 'vertical', right: 8, top: 'center', textStyle: { color: '#5C6382', fontSize: 11, fontFamily: 'DM Sans' }, itemWidth: 10, itemHeight: 10 },
-    series: [{
-      type: 'pie', radius: ['50%', '80%'], center: ['35%', '50%'],
-      data: donutData, color: chartColors,
-      label: { show: false }, emphasis: { label: { show: false } },
-      itemStyle: { borderColor: '#FBF7EE', borderWidth: 2 },
-    }],
-  };
-
   const allocPct = ((kpis.allocated / kpis.mtaBalance) * 100).toFixed(0);
   const freePct  = ((kpis.unallocated / kpis.mtaBalance) * 100).toFixed(0);
+  const treasury: [string, string, string][] = [
+    ['MTA Balance', fmtUSD(kpis.mtaBalance), 'Municipal treasury account'],
+    ['Allocated', fmtUSD(kpis.allocated), `${allocPct}% of balance`],
+    ['Unallocated', fmtUSD(kpis.unallocated), `${freePct}% available`],
+  ];
 
   return (
     <div className="max-w-[1280px] mx-auto space-y-6">
@@ -77,39 +79,48 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {/* KPI strip */}
+      {/* Budget position KPIs (the power user's first question) */}
       <div className="grid grid-cols-4 gap-4">
-        <StatTile label="MTA Balance" value={fmtCompact(kpis.mtaBalance)} sub="Municipal treasury account" accent="var(--chart-1)" />
-        <StatTile label="Allocated" value={fmtCompact(kpis.allocated)} sub={`${allocPct}% of balance`} delta={allocPct + '%'} deltaTone="neutral" accent="var(--chart-2)" />
-        <StatTile label="Unallocated" value={fmtCompact(kpis.unallocated)} sub={`${freePct}% available`} accent="var(--chart-3)" />
-        <StatTile label="Card Pool Total" value={fmtCompact(kpis.cardPoolTotal)} sub="Active card programs" accent="var(--chart-4)" />
+        <StatTile label="Approved Budget" value={fmtCompact(approved)} sub="FY2026 appropriation" accent="var(--chart-1)" />
+        <StatTile label="YTD Actual Spend" value={fmtCompact(actual)} sub={`${utilized}% utilized`} delta={`${yoyPct >= 0 ? '+' : ''}${yoyPct}% YoY`} deltaTone="neutral" accent="var(--chart-2)" />
+        <StatTile label="Encumbrances" value={fmtCompact(encumbered)} sub="Open commitments" accent="var(--chart-3)" />
+        <StatTile label="Remaining Balance" value={fmtCompact(remaining)} sub={`${100 - utilized}% of budget`} accent="var(--chart-4)" />
       </div>
 
-      {/* Charts row */}
+      {/* Fiscal health (rolled up from Budget Analytics) */}
+      <Card eyebrow="Fiscal health" title="Budget Health"
+        actions={<Button size="sm" variant="ghost" href="/budget">Budget analytics</Button>}>
+        <div className="flex items-center gap-4 flex-wrap">
+          <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-[15px] font-semibold"
+            style={{ background: RATING_COLOR[health.rating], color: '#FBF7EE' }}>
+            <span className="w-2 h-2 rounded-full" style={{ background: '#FBF7EE' }} /> {health.rating}
+          </span>
+          <p className="text-[13px] text-muted">
+            {health.counts['At Risk']} at risk · {health.counts['Watch']} watch · {health.counts['Healthy']} healthy
+          </p>
+          {flaggedDepts.length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              {flaggedDepts.map(i => (
+                <span key={i.name} className="inline-flex items-center gap-1.5 text-[12px] px-2 py-1 rounded-xs"
+                  style={{ background: 'var(--cc-paper-deep)', color: 'var(--cc-ink-soft)' }}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: RATING_COLOR[i.rating] }} /> {i.name}
+                  <Badge tone={RATING_TONE[i.rating]} dot={false} style={{ fontSize: 10 }}>{i.rating}</Badge>
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Trend + what-needs-attention */}
       <div className="grid grid-cols-3 gap-4">
         <Card eyebrow="Spend trend" title="Monthly Expenditure" className="col-span-2" padded={false}
-          actions={<Button size="sm" variant="ghost">Full report</Button>}>
+          actions={<Button size="sm" variant="ghost" href="/budget">Full report</Button>}>
           <div className="px-1">
             <ReactECharts option={trendOption} style={{ height: 220 }} />
           </div>
         </Card>
 
-        <Card eyebrow="Category breakdown" title="Spend by Category" padded={false}>
-          <ReactECharts option={donutOption} style={{ height: 220 }} />
-        </Card>
-      </div>
-
-      {/* Budget bars + feeds */}
-      <div className="grid grid-cols-3 gap-4">
-        <Card eyebrow="Budget vs Actual" title="Department Allocation" className="col-span-1">
-          <div className="space-y-4">
-            {departments.map(d => (
-              <BudgetBar key={d.name} label={d.name} spent={d.spent} budget={d.budget} color={d.color} />
-            ))}
-          </div>
-        </Card>
-
-        {/* Recent anomalies */}
         <Card eyebrow="Risk signals" title="Anomaly Feed"
           actions={<Button size="sm" variant="ghost" href="/anomalies">View all</Button>}>
           <div className="space-y-2.5">
@@ -125,10 +136,26 @@ export default function OverviewPage() {
             ))}
           </div>
         </Card>
+      </div>
 
-        {/* Recent anchors */}
-        <Card eyebrow="On-chain records" title="Recent Anchors"
-          actions={<Button size="sm" variant="ghost">Ledger</Button>}>
+      {/* Treasury (secondary) + on-chain records */}
+      <div className="grid grid-cols-3 gap-4">
+        <Card eyebrow="Treasury" title="Account Position" className="col-span-1">
+          <div className="space-y-3">
+            {treasury.map(([label, val, sub]) => (
+              <div key={label} className="flex items-center justify-between">
+                <div>
+                  <p className="text-[13px] text-ink-soft font-medium">{label}</p>
+                  <p className="text-[11px] text-muted">{sub}</p>
+                </div>
+                <span className="font-mono text-[15px] tabular-nums text-ink">{val}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        <Card eyebrow="On-chain records" title="Recent Anchors" className="col-span-2"
+          actions={<Button size="sm" variant="ghost" href="/ledger">Ledger</Button>}>
           <div className="space-y-0 -mx-4">
             {recentAnchors.map(t => (
               <div key={t.id} className="flex items-center justify-between px-4 h-[38px] border-b hover:bg-[#DBE3EE]/40 transition-colors group cursor-default" style={{ borderColor: 'var(--cc-line)' }}>

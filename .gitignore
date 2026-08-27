@@ -15,6 +15,12 @@ quarantine_dropzones/
 # Rust / Soroban build artifacts
 target/
 *.wasm
+test_snapshots/
+
+# Next.js build output and generated files
+frontend/.next/
+frontend/next-env.d.ts
+*.tsbuildinfo
 
 # Postgres local volume (if bind-mounted during dev)
 postgres_data/

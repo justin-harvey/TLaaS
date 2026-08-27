@@ -33,7 +33,7 @@ pub enum DataKey {
 }
 
 #[contracttype]
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct AnchorRecord {
     pub ipfs_cid: String,
     pub data_hash: BytesN<32>,

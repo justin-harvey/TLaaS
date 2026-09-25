@@ -23,14 +23,13 @@ const nav: NavItem[] = [
   { id: 'query',     label: 'Query Terminal',          href: '/query',     icon: Terminal },
   { id: 'verify',    label: 'Blockchain Verification', href: '/verify',    icon: Shield },
   { id: 'anomalies', label: 'Anomaly Center',          href: '/anomalies', icon: AlertTriangle },
+  { id: 'budget',    label: 'Budget Analytics',        href: '/budget',    icon: BarChart3 },
+  { id: 'vendors',   label: 'Vendor Intelligence',     href: '/vendors',   icon: Store },
+  { id: 'dept',      label: 'Department Analysis',      href: '/dept',      icon: Users },
+  { id: 'contracts', label: 'Contracts',               href: '/contracts', icon: ScrollText },
+  { id: 'admin',     label: 'Administration',           href: '/admin',     icon: Settings },
 ];
-const navSoon: NavItem[] = [
-  { id: 'contracts', label: 'Contracts',          href: '#', icon: ScrollText, soon: true },
-  { id: 'budget',    label: 'Budget Analytics',   href: '#', icon: BarChart3,  soon: true },
-  { id: 'vendors',   label: 'Vendor Intelligence',href: '#', icon: Store,      soon: true },
-  { id: 'dept',      label: 'Department Analysis',href: '#', icon: Users,      soon: true },
-  { id: 'admin',     label: 'Administration',     href: '#', icon: Settings,   soon: true },
-];
+const navSoon: NavItem[] = [];
 
 export function Sidebar() {
   const path = usePathname();
@@ -78,21 +77,25 @@ export function Sidebar() {
           );
         })}
 
-        <p className="type-label px-2 mt-4 mb-2">Coming Soon</p>
-        {navSoon.map(item => (
-          <div key={item.id}
-            className="flex items-center justify-between px-2 py-2 rounded-xs text-sm cursor-default select-none opacity-50"
-            style={{ color: 'var(--cc-muted)' }}>
-            <div className="flex items-center gap-2.5">
-              <item.icon size={15} className="flex-shrink-0" />
-              {item.label}
-            </div>
-            <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-xs"
-              style={{ background: 'var(--cc-tone-dusty)', color: 'var(--cc-tone-dusty-fg)' }}>
-              SOON
-            </span>
-          </div>
-        ))}
+        {navSoon.length > 0 && (
+          <>
+            <p className="type-label px-2 mt-4 mb-2">Coming Soon</p>
+            {navSoon.map(item => (
+              <div key={item.id}
+                className="flex items-center justify-between px-2 py-2 rounded-xs text-sm cursor-default select-none opacity-50"
+                style={{ color: 'var(--cc-muted)' }}>
+                <div className="flex items-center gap-2.5">
+                  <item.icon size={15} className="flex-shrink-0" />
+                  {item.label}
+                </div>
+                <span className="text-[9px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-xs"
+                  style={{ background: 'var(--cc-tone-dusty)', color: 'var(--cc-tone-dusty-fg)' }}>
+                  SOON
+                </span>
+              </div>
+            ))}
+          </>
+        )}
       </nav>
 
       {/* Footer */}

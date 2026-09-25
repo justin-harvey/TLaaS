@@ -148,3 +148,17 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .cc-slide-in, .cc-fade-in { animation: none; }
 }
+
+/* ======================================================================
+   Print / PDF — hide chrome, show the report content only
+   ====================================================================== */
+@media print {
+  aside { display: none !important; }
+  body > div { margin-left: 0 !important; }
+  main { padding: 0 !important; }
+  .no-print { display: none !important; }
+  .cc-fade-in { animation: none !important; }
+  .report-section { break-inside: avoid; }
+}
+
+@page { margin: 1.5cm; }

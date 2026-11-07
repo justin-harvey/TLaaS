@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Civic-Chain Dashboard · Build Summary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Text&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --ink:#131F86; --ink-soft:#14243F; --muted:#5C6382;
+    --paper:#F3F1E8; --card:#FBF7EE; --card-raised:#FFFDF7;
+    --line:#DDD3BE; --line-strong:#C6B99E;
+    --anchored:#5F7E5A; --pending:#B8862B; --spike:#A8483A;
+    --cream:#F0E6CF; --dusty:#DBE3EE; --sage:#E2E8DA;
+    --serif:"DM Serif Text", Georgia, "Times New Roman", serif;
+    --sans:"DM Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --mono:"IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--paper);color:var(--ink-soft);font-family:var(--sans);line-height:1.55;-webkit-font-smoothing:antialiased;}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+  a{color:var(--ink);}
+  .label{font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);}
+  .mono{font-family:var(--mono);}
+  h1,h2,h3{font-family:var(--serif);color:var(--ink);font-weight:400;line-height:1.15;margin:0;}
+
+  /* Header band */
+  header.band{background:var(--card);border-bottom:1px solid var(--line);}
+  .band .wrap{padding-top:34px;padding-bottom:34px;}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:22px;}
+  .mark{width:34px;height:34px;border-radius:8px;background:var(--ink);color:#FBF7EE;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:17px;flex:0 0 auto;}
+  .brand .name{font-family:var(--serif);font-size:17px;color:var(--ink);line-height:1;}
+  .brand .sub{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-top:3px;}
+  h1{font-size:40px;letter-spacing:-.01em;}
+  .lede{font-size:17px;color:var(--ink-soft);max-width:760px;margin-top:14px;}
+  .meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:18px;font-size:12px;color:var(--muted);}
+  .meta b{color:var(--ink-soft);font-weight:600;}
+
+  /* Stat strip */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:28px 0 4px;}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 18px;}
+  .stat .n{font-family:var(--mono);font-size:26px;color:var(--ink);font-variant-numeric:tabular-nums;}
+  .stat .t{font-size:12px;color:var(--muted);margin-top:4px;}
+
+  section{padding:30px 0;border-top:1px solid var(--line);}
+  section:first-of-type{border-top:none;}
+  section > .wrap > h2{font-size:24px;margin-bottom:4px;}
+  .section-sub{font-size:14px;color:var(--muted);margin-bottom:20px;}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;}
+  .card .top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+  .card h3{font-size:17px;}
+  .card .route{font-family:var(--mono);font-size:12px;color:var(--ink);background:var(--dusty);padding:2px 7px;border-radius:5px;}
+  .card p{font-size:13.5px;color:var(--ink-soft);margin:6px 0 0;}
+  .card ul{margin:8px 0 0;padding-left:18px;font-size:13px;color:var(--muted);}
+  .card li{margin:2px 0;}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:5px;}
+  .pill.built{background:var(--sage);color:#3A5436;}
+  .pill.existing{background:var(--dusty);color:#3A4A6B;}
+  .pill.reordered{background:var(--cream);color:#7A5B12;}
+  .dot{width:7px;height:7px;border-radius:50%;display:inline-block;}
+
+  /* Timeline */
+  ol.timeline{list-style:none;margin:0;padding:0;counter-reset:step;}
+  ol.timeline li{position:relative;padding:0 0 16px 38px;counter-increment:step;}
+  ol.timeline li::before{content:counter(step);position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:var(--ink);color:#FBF7EE;font-family:var(--mono);font-size:12px;display:flex;align-items:center;justify-content:center;}
+  ol.timeline li:not(:last-child)::after{content:"";position:absolute;left:12.5px;top:28px;bottom:0;width:1px;background:var(--line-strong);}
+  ol.timeline b{color:var(--ink);}
+  ol.timeline p{margin:3px 0 0;font-size:13.5px;color:var(--muted);}
+
+  table{width:100%;border-collapse:collapse;font-size:13.5px;}
+  th{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);}
+  td{padding:9px 10px;border-bottom:1px solid var(--line);color:var(--ink-soft);}
+  td.k{color:var(--ink);font-weight:600;}
+
+  .note{background:var(--cream);border:1px solid #B8862B40;border-radius:10px;padding:16px 18px;font-size:13.5px;color:var(--ink-soft);}
+  footer{border-top:1px solid var(--line);padding:24px 0 48px;font-size:12px;color:var(--muted);}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  .sw{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted);font-family:var(--mono);}
+  .sw i{width:16px;height:16px;border-radius:4px;border:1px solid #00000012;display:inline-block;}
+  @media(max-width:720px){.grid,.stats{grid-template-columns:1fr;}h1{font-size:32px;}}
+</style>
+</head>
+<body>
+
+<header class="band">
+  <div class="wrap">
+    <div class="brand">
+      <div class="mark">CC</div>
+      <div>
+        <div class="name">Civic-Chain</div>
+        <div class="sub">Municipal Ledger Analytics</div>
+      </div>
+    </div>
+    <p class="label">Build summary · TLaaS dashboard</p>
+    <h1>From five "Coming Soon" stubs to a complete demo</h1>
+    <p class="lede">A mock-first, pilot-ready build of the Civic-Chain government financial transparency dashboard. Every formerly greyed-out nav item is now a working surface, grounded in the real power user (a small-town Finance Director) and the project's own docs, with on-chain verification woven through.</p>
+    <div class="meta">
+      <span><b>Tenant:</b> Town of Any Town, Maine (demo)</span>
+      <span><b>Stack:</b> Next.js 16 · React 19 · ECharts · AG Grid</span>
+      <span><b>Branch:</b> <span class="mono">feat/coming-soon-analytics</span></span>
+      <span><b>Generated:</b> June 2026</span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="n">12</div><div class="t">routes in the app</div></div>
+    <div class="stat"><div class="n">5 / 5</div><div class="t">"Coming Soon" features now live</div></div>
+    <div class="stat"><div class="n">2</div><div class="t">outward-facing surfaces added</div></div>
+    <div class="stat"><div class="n">0</div><div class="t">backend or DB changes</div></div>
+  </div>
+</div>
+
+<section>
+  <div class="wrap">
+    <h2>The surfaces</h2>
+    <p class="section-sub">Twelve routes. The five existing ledger pages, the five formerly-deferred features, and two outward-facing additions.</p>
+
+    <p class="label" style="margin-bottom:12px;"><span class="dot" style="background:var(--dusty);"></span> Core ledger (pre-existing)</p>
+    <div class="grid">
+      <div class="card"><div class="top"><h3>Executive Overview</h3><span class="route">/overview</span></div>
+        <span class="pill reordered">Reordered this session</span>
+        <p>Now leads with budget position and a Fiscal Health banner (the power user's first question), with treasury demoted and duplicate cards removed.</p></div>
+      <div class="card"><div class="top"><h3>Public Ledger</h3><span class="route">/ledger</span></div>
+        <span class="pill existing">Existing</span>
+        <p>Searchable, filterable transaction explorer with a record drawer and per-transaction on-chain proof.</p></div>
+      <div class="card"><div class="top"><h3>Query Terminal</h3><span class="route">/query</span></div>
+        <span class="pill existing">Existing</span>
+        <p>Natural-language to SQL plus a read-only SQL sandbox, with fingerprint-verified results.</p></div>
+      <div class="card"><div class="top"><h3>Blockchain Verification</h3><span class="route">/verify</span></div>
+        <span class="pill existing">Existing</span>
+        <p>Verify a payment record by comparing its off-chain fingerprint against the on-chain anchor.</p></div>
+      <div class="card"><div class="top"><h3>Anomaly Center</h3><span class="route">/anomalies</span></div>
+        <span class="pill existing">Existing</span>
+        <p>Spend-risk heatmap and a triage queue of flagged transactions (spikes, duplicates, outliers).</p></div>
+    </div>
+
+    <p class="label" style="margin:26px 0 12px;"><span class="dot" style="background:var(--sage);"></span> Analytics (built this session)</p>
+    <div class="grid">
+      <div class="card"><div class="top"><h3>Budget Analytics</h3><span class="route">/budget</span></div>
+        <span class="pill built">Built</span>
+        <p>The deepest surface. Budget vs actual with a predictive twist.</p>
+        <ul>
+          <li>Approved / YTD / encumbrances / remaining KPIs with year-over-year deltas</li>
+          <li>Fiscal-year selector and fund segmented control</li>
+          <li>Year-End Projection (burn-rate + pacing) with over-budget rows flagged</li>
+          <li>Top Movers, category drill-down, revenue vs expenditure, open commitments, amendments log</li>
+          <li>CSV export and a print path; entry to the Council Report</li>
+        </ul></div>
+      <div class="card"><div class="top"><h3>Vendor Intelligence</h3><span class="route">/vendors</span></div>
+        <span class="pill built">Built</span>
+        <p>Procurement-side view of who gets paid.</p>
+        <ul>
+          <li>Top vendors by spend and payment-mechanism mix</li>
+          <li>Searchable AG Grid vendor directory with flag and anchor status</li>
+          <li>Click-through vendor drawer with the vendor's payment history</li>
+        </ul></div>
+      <div class="card"><div class="top"><h3>Department Analysis</h3><span class="route">/dept</span></div>
+        <span class="pill built">Built</span>
+        <p>Spend by department with drill-downs.</p>
+        <ul>
+          <li>Department cards with utilization, flags, and top vendor</li>
+          <li>Department-by-week spend-risk heatmap linking into the Ledger</li>
+          <li>Spend-share chart and a comparison table</li>
+        </ul></div>
+      <div class="card"><div class="top"><h3>Council Financial Report</h3><span class="route">/report</span></div>
+        <span class="pill built">Built</span>
+        <p>The Finance Director's most common real-world task: the monthly report to Council, as a printable, document-style PDF with an executive summary, budget vs actual, fund balance, variance highlights, and an on-chain verification trail.</p></div>
+    </div>
+
+    <p class="label" style="margin:26px 0 12px;"><span class="dot" style="background:var(--sage);"></span> Records, admin, and public (built this session)</p>
+    <div class="grid">
+      <div class="card"><div class="top"><h3>Contracts</h3><span class="route">/contracts</span></div>
+        <span class="pill built">Built</span>
+        <p>Resolves the long-standing department-vs-contract confusion: the contract becomes the real procurement object. A register with a balanced "Needs Attention" view (over/near ceiling, expiring, PO breach, stalled), drilling into a per-contract verifiable record at <span class="mono">/contracts/[id]</span> with a not-to-exceed burn meter and a payment trail carrying on-chain proof.</p></div>
+      <div class="card"><div class="top"><h3>Administration</h3><span class="route">/admin</span></div>
+        <span class="pill built">Built</span>
+        <p>A tabbed console for the Finance Director wearing the tenant-admin hat: <b>Governance</b> (close-of-period sign-off, anchor history, override audit trail), <b>Users &amp; Roles</b> (RBAC per the Access Control Policy), <b>Data Connections</b> (Plaid / RePay / ERP feed health), and <b>Settings &amp; Ruleset</b> (the MCC-to-category semantic layer).</p></div>
+      <div class="card"><div class="top"><h3>Public Transparency Portal</h3><span class="route">/public</span></div>
+        <span class="pill built">Built</span>
+        <p>A full-bleed, citizen-facing page: a plain-language budget summary plus an "open checkbook" that lets the public search every vendor payment, the dominant real-world public query, with a verified badge per row and CSV download.</p></div>
+      <div class="card"><div class="top"><h3>Sidebar &amp; navigation</h3><span class="route">layout</span></div>
+        <span class="pill built">Updated</span>
+        <p>All five features promoted from "Coming Soon" into the active nav; the empty "Coming Soon" group is now hidden. Cross-links thread budget, vendor, department, contract, and ledger views together.</p></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>How it came together</h2>
+    <p class="section-sub">The build order, each step verified by a green type/build gate and a live preview check.</p>
+    <ol class="timeline">
+      <li><b>Three analytics pages.</b><p>Budget Analytics, Vendor Intelligence, and Department Analysis, mock-first and wired through the existing useMock fallback.</p></li>
+      <li><b>Budget roadmap enhancements.</b><p>Burn-rate forecast and pacing, fiscal-year selector, year-over-year, category drill-down, CSV/print export, open commitments, and revenue vs expenditure.</p></li>
+      <li><b>Council Financial Report.</b><p>A printable record built around the Finance Director's monthly deliverable, reusing the budget data and the on-chain verification theme.</p></li>
+      <li><b>Public open checkbook.</b><p>Added a searchable public payment register to the citizen portal, matching how real open-checkbook sites are actually used.</p></li>
+      <li><b>Slim-down and Overview reorder.</b><p>A deep review removed redundant variance views and reordered the Overview to lead with budget and variance, the power user's real first question.</p></li>
+      <li><b>Contracts.</b><p>A register plus a per-contract verifiable record, making the contract the real procurement object.</p></li>
+      <li><b>Administration.</b><p>The final tabbed console, completing all five formerly-deferred features.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Architecture &amp; decisions</h2>
+    <p class="section-sub">Consistent patterns across every surface, so the demo stays coherent and a real backend can slot in later.</p>
+    <table>
+      <thead><tr><th>Decision</th><th>What it means</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Mock-first</td><td>Every page renders from fixtures and only calls a backend if <span class="mono">NEXT_PUBLIC_API_URL</span> is set. The demo runs with no server.</td></tr>
+        <tr><td class="k">useMock fallback</td><td>Each new data function mirrors the existing pattern, so real endpoints replace mock data with no UI rewrite.</td></tr>
+        <tr><td class="k">Existing design kit</td><td>No new colors or fonts. Reused the Civic-Chain tokens, components, and the no-em-dash voice throughout.</td></tr>
+        <tr><td class="k">Shared logic</td><td>Scoring lives in pure modules (<span class="mono">budget-health.ts</span>, <span class="mono">contracts.ts</span>) so pages that show the same signal never drift.</td></tr>
+        <tr><td class="k">On-chain theme</td><td>Verification proof (fingerprint, ledger tx, anchor) surfaces on the ledger, contracts, the report, and Administration governance.</td></tr>
+        <tr><td class="k">No backend changes</td><td>No DB, validator, or contract edits. The real governance backend is untouched and still powers live signing in the Ledger drawer.</td></tr>
+      </tbody>
+    </table>
+    <div class="swatches">
+      <span class="sw"><i style="background:#131F86"></i>#131F86 ink</span>
+      <span class="sw"><i style="background:#F3F1E8"></i>#F3F1E8 paper</span>
+      <span class="sw"><i style="background:#FBF7EE"></i>#FBF7EE card</span>
+      <span class="sw"><i style="background:#5F7E5A"></i>#5F7E5A anchored</span>
+      <span class="sw"><i style="background:#B8862B"></i>#B8862B pending</span>
+      <span class="sw"><i style="background:#A8483A"></i>#A8483A spike</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Grounded in the power user</h2>
+    <p class="section-sub">Each feature traces back to a real municipal need, validated against GFOA practice, open-checkbook portals, and the project's own sales and security docs, not internal guesswork.</p>
+    <table>
+      <thead><tr><th>Power user</th><th>Need</th><th>Surface</th></tr></thead>
+      <tbody>
+        <tr><td class="k">Finance Director</td><td>Are we on budget, and where is the variance?</td><td>Overview, Budget Analytics</td></tr>
+        <tr><td class="k">Finance Director</td><td>Produce the monthly Council report in minutes</td><td>Council Financial Report</td></tr>
+        <tr><td class="k">Procurement Officer</td><td>Which contracts are near ceiling or expiring?</td><td>Contracts</td></tr>
+        <tr><td class="k">Tenant admin</td><td>Sign close-of-period; control who has access</td><td>Administration</td></tr>
+        <tr><td class="k">Citizen / Council</td><td>How much did the town pay a given vendor?</td><td>Public Transparency Portal</td></tr>
+        <tr><td class="k">Auditor</td><td>Confirm the numbers were not altered</td><td>Blockchain Verification, audit trail</td></tr>
+      </tbody>
+    </table>
+    <div class="note" style="margin-top:18px;">
+      <b>Status:</b> all five formerly-"Coming Soon" features are built and verified (build green, live preview checked, no console errors). The work is a demo-ready mock UI on the <span class="mono">feat/coming-soon-analytics</span> branch; the finalized product spec lives at <span class="mono">civic-chain-docs/product/specs/CIVIC-PROD-DASHBOARD-ANALYTICS-SPEC-v1.0.md</span>.
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    Civic-Chain · TLaaS municipal ledger analytics · build summary. Demo tenant: Town of Any Town, Maine. Figures are illustrative mock data. Powered by Civic-Chain.
+  </div>
+</footer>
+
+</body>
+</html>

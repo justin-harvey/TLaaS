@@ -1,4 +1,4 @@
-# TLaaS — Transparency Ledger as a Service
+# TLaaS: Transparency Layer as a Service
 
 Live here: https://civic-chain-tlaas.netlify.app/overview
 
